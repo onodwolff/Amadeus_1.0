@@ -1,4 +1,4 @@
-# Amadeus 0.1
+# Amadeus 1.0
 
 This project provides a FastAPI backend and an Angular frontend for the Amadeus trading bot.
 
