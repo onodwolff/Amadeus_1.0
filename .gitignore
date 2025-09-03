@@ -32,6 +32,9 @@ backend/.ipynb_checkpoints/
 backend/bot.log
 backend/logs/
 
+# База данных и runtime-конфиг
+backend/data/
+
 # Секреты/конфиги
 backend/.env
 backend/.env.*
