@@ -30,7 +30,7 @@ backend/htmlcov/
 backend/.ipynb_checkpoints/
 
 # Логи/временные файлы бота
-backend/bot.log
+backend/bot.log*
 backend/logs/
 
 # База данных и runtime-конфиг
