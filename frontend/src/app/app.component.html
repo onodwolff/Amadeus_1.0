@@ -1,0 +1,240 @@
+<!-- ======= TOP BAR ======= -->
+<header class="topbar">
+    <div class="brand">{{ title }}</div>
+    <div class="spacer"></div>
+
+    <!-- Scanner -->
+    <button mat-icon-button aria-label="Scanner" (click)="openScanner()" matTooltip="Сканер пар">
+        <mat-icon>search</mat-icon>
+    </button>
+
+    <!-- История -->
+    <button mat-icon-button aria-label="История" (click)="openHistory()" matTooltip="История / Live">
+        <mat-icon>history</mat-icon>
+    </button>
+
+    <!-- Настройки -->
+    <button mat-icon-button aria-label="Настройки" (click)="openConfig()" matTooltip="Настройки">
+        <mat-icon>tune</mat-icon>
+    </button>
+</header>
+
+<!-- ======= CONTROLS ======= -->
+<section class="section">
+    <app-controls></app-controls>
+</section>
+
+<!-- ======= ROW 1: Dashboard + Orders ======= -->
+<section class="section">
+    <div class="grid grid-2">
+        <div class="card">
+            <app-dashboard></app-dashboard>
+        </div>
+        <div class="card">
+            <app-orders-widget></app-orders-widget>
+        </div>
+    </div>
+</section>
+
+<!-- ======= ROW 2: Chart + Logs (50/50) ======= -->
+<section class="section">
+    <div class="row-tv-logs">
+        <!-- CHART CARD -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title">График</div>
+                <div class="card-actions">
+                    <!-- Переключатель графика в правом углу шапки карточки -->
+                    <button mat-icon-button aria-label="Chart mode" (click)="toggleChart()"
+                            [matTooltip]="isTv() ? 'Переключить на Lightweight' : 'Переключить на TradingView'">
+                        <mat-icon *ngIf="isTv()" fontSet="material-symbols-outlined">candlestick_chart</mat-icon>
+                        <mat-icon *ngIf="!isTv()">show_chart</mat-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="fill">
+                <ng-container *ngIf="isTv(); else lwTpl">
+                    <app-tv-advanced></app-tv-advanced>
+                </ng-container>
+                <ng-template #lwTpl>
+                    <app-tv-lightweight></app-tv-lightweight>
+                </ng-template>
+            </div>
+        </div>
+
+        <!-- LOGS CARD -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title">Логи</div>
+                <div class="card-actions">
+                    <!-- Иконка очистки логов справа -->
+                    <button mat-icon-button aria-label="Очистить логи" matTooltip="Очистить"
+                            (click)="logsComp?.clear?.()">
+                        <mat-icon>delete_sweep</mat-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="fill">
+                <app-logs #logsComp></app-logs>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======= RISK (ниже графика) ======= -->
+<section class="section">
+    <app-risk-widget></app-risk-widget>
+</section>
+
+<!-- ======= OVERLAY: HISTORY ======= -->
+<div class="overlay" *ngIf="showHistory" (click)="closeOverlays()">
+    <div class="panel panel-wide" (click)="$event.stopPropagation()">
+        <div class="panel-head">
+            <div class="title">История</div>
+            <div class="tabs">
+                <button mat-stroked-button [class.active]="histTab==='live'" (click)="setHistTab('live')">Live</button>
+                <button mat-stroked-button [class.active]="histTab==='db'" (click)="setHistTab('db')">DB</button>
+            </div>
+            <button mat-icon-button (click)="closeOverlays()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <!-- LIVE -->
+        <div class="panel-body" *ngIf="histTab==='live'">
+            <div class="group">
+                <div class="group-title">Активные ордера (последние 20)</div>
+                <div class="scroll">
+                    <table class="tbl small">
+                        <thead>
+                        <tr><th>ID</th><th>Side</th><th>Price</th><th>Qty</th><th>Status</th><th>Time</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let o of (liveOpenList | slice:0:20); trackBy: trackId">
+                            <td class="mono">{{ o.id }}</td>
+                            <td [class.buy]="o.side==='BUY'" [class.sell]="o.side==='SELL'">{{ o.side }}</td>
+                            <td class="mono">{{ o.price | number:'1.2-6' }}</td>
+                            <td class="mono">{{ o.qty | number:'1.6-6' }}</td>
+                            <td>{{ o.status }}</td>
+                            <td class="mono">{{ o.ts | date:'mediumTime' }}</td>
+                        </tr>
+                        <tr *ngIf="(liveOpenList | slice:0:20).length===0"><td colspan="6" class="muted">нет активных</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Сделки (последние 20)</div>
+                <div class="scroll">
+                    <table class="tbl small">
+                        <thead>
+                        <tr><th>ID</th><th>Side</th><th>Price</th><th>Qty</th><th>PNL</th><th>Time</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let t of (liveTrades | slice:0:20); trackBy: trackId">
+                            <td class="mono">{{ t.id }}</td>
+                            <td [class.buy]="t.side==='BUY'" [class.sell]="t.side==='SELL'">{{ t.side }}</td>
+                            <td class="mono">{{ t.price | number:'1.2-6' }}</td>
+                            <td class="mono">{{ t.qty | number:'1.6-6' }}</td>
+                            <td class="mono" [class.profit]="t.pnl>0" [class.loss]="t.pnl<0">{{ t.pnl | number:'1.2-2' }}</td>
+                            <td class="mono">{{ t.ts | date:'mediumTime' }}</td>
+                        </tr>
+                        <tr *ngIf="(liveTrades | slice:0:20).length===0"><td colspan="6" class="muted">пока пусто</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- DB -->
+        <div class="panel-body" *ngIf="histTab==='db'">
+            <div class="group">
+                <div class="group-title-row">
+                    <span>Orders (DB)</span><span class="muted">/ {{ dbOrders.length }}</span>
+                    <span class="spacer"></span>
+                    <button mat-stroked-button (click)="loadDbHistory()" [disabled]="dbLoading">
+                        {{ dbLoading ? 'Загрузка...' : 'Обновить' }}
+                    </button>
+                </div>
+                <div class="scroll">
+                    <table class="tbl small">
+                        <thead>
+                        <tr><th>Event</th><th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Qty</th><th>Status</th><th>Time</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let r of dbOrders">
+                            <td class="mono">{{ r.event }}</td>
+                            <td class="mono">{{ r.symbol }}</td>
+                            <td [class.buy]="r.side==='BUY'" [class.sell]="r.side==='SELL'">{{ r.side }}</td>
+                            <td>{{ r.type }}</td>
+                            <td class="mono">{{ r.price | number:'1.2-8' }}</td>
+                            <td class="mono">{{ r.qty | number:'1.6-8' }}</td>
+                            <td>{{ r.status }}</td>
+                            <td class="mono">{{ r.ts | date:'medium' }}</td>
+                        </tr>
+                        <tr *ngIf="!dbLoading && dbOrders.length===0"><td colspan="8" class="muted">пусто</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title-row">
+                    <span>Trades (DB)</span><span class="muted">/ {{ dbTrades.length }}</span>
+                    <span class="spacer"></span>
+                    <button mat-stroked-button (click)="loadDbHistory()" [disabled]="dbLoading">
+                        {{ dbLoading ? 'Загрузка...' : 'Обновить' }}
+                    </button>
+                </div>
+                <div class="scroll">
+                    <table class="tbl small">
+                        <thead>
+                        <tr><th>Event</th><th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Qty</th><th>Status</th><th>Time</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let r of dbTrades">
+                            <td class="mono">{{ r.event }}</td>
+                            <td class="mono">{{ r.symbol }}</td>
+                            <td [class.buy]="r.side==='BUY'" [class.sell]="r.side==='SELL'">{{ r.side }}</td>
+                            <td>{{ r.type }}</td>
+                            <td class="mono">{{ r.price | number:'1.2-8' }}</td>
+                            <td class="mono">{{ r.qty | number:'1.6-8' }}</td>
+                            <td>{{ r.status }}</td>
+                            <td class="mono">{{ r.ts | date:'medium' }}</td>
+                        </tr>
+                        <tr *ngIf="!dbLoading && dbTrades.length===0"><td colspan="8" class="muted">пусто</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ======= OVERLAY: SCANNER ======= -->
+<div class="overlay" *ngIf="showScanner" (click)="closeOverlays()">
+    <div class="panel panel-wide" (click)="$event.stopPropagation()">
+        <div class="panel-head">
+            <div class="title">Сканер</div>
+            <span class="spacer"></span>
+            <button mat-icon-button (click)="closeOverlays()"><mat-icon>close</mat-icon></button>
+        </div>
+        <div class="panel-body">
+            <app-scanner></app-scanner>
+        </div>
+    </div>
+</div>
+
+<!-- ======= OVERLAY: CONFIG (Settings) ======= -->
+<div class="overlay" *ngIf="showConfig" (click)="closeOverlays()">
+    <div class="panel panel-wide" (click)="$event.stopPropagation()">
+        <div class="panel-head">
+            <div class="title">Настройки</div>
+            <span class="spacer"></span>
+            <button mat-icon-button (click)="closeOverlays()"><mat-icon>close</mat-icon></button>
+        </div>
+        <div class="panel-body">
+            <app-config></app-config>
+        </div>
+    </div>
+</div>

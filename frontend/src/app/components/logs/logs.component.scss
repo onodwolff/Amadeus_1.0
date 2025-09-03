@@ -1,0 +1,39 @@
+/* контейнер занимает высоту карточки и не растягивает родителя */
+.logs { display:flex; flex-direction:column; height:100%; gap:8px; min-height:0; }
+
+/* область со скроллом
+   ВАЖНО: min-height:0 — чтобы flex-элемент позволял внутреннему скроллу,
+   а не растягивал колонку */
+.pane {
+    flex:1 1 auto;
+    min-height: 0;
+    overflow:auto;
+    border:1px solid #1b1f24;
+    border-radius:10px;
+    background:#0f1216;
+}
+
+/* таблица логов (мелкий шрифт) */
+.tbl { width:100%; border-collapse:collapse; table-layout: fixed; font-size: 11px; }
+.tbl thead th {
+    position: sticky; top: 0; z-index: 1;
+    background:#0f1216;
+    border-bottom:1px solid #242a31;
+    text-align:left; padding:6px 8px;
+}
+.tbl tbody td {
+    border-bottom:1px solid #1b1f24;
+    padding:6px 8px; vertical-align: top;
+}
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* перенос длинных сообщений */
+.txt { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; color:#e6edf3; }
+
+/* раскраска типов */
+.type { font-weight:700; }
+.type-status { color:#8be9fd; }
+.type-diag   { color:#bd93f9; }
+.type-stats  { color:#f1fa8c; }
+.type-order  { color:#ffb86c; }
+.type-trade  { color:#50fa7b; }
