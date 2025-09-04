@@ -9,19 +9,19 @@
       "prefix": "app",
       "architect": {
         "build": {
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "polyfills": [],
             "tsConfig": "tsconfig.json"
           }
         },
         "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": { "browserTarget": "amadeus-mvp-ui:build" }
         }
       }
     }
-  },
-  "defaultProject": "amadeus-mvp-ui"
+  }
 }
