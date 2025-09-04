@@ -15,7 +15,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
       <nav class="flex flex-col gap-1">
         <a routerLink="/dashboard" routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">🏠 <span *ngIf="!collapsed">Dashboard</span></a>
         <a routerLink="/market"    routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">📈 <span *ngIf="!collapsed">Market</span></a>
-        <a routerLink="/strategies"routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">🤖 <span *ngIf="!collapsed">Strategies</span></a>
+        <a routerLink="/strategies" routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">🤖 <span *ngIf="!collapsed">Strategies</span></a>
       </nav>
     </aside>
 
