@@ -7,6 +7,7 @@ import { OrdersComponent } from './features/orders/orders.component';
 import { PortfolioComponent } from './features/portfolio/portfolio.component';
 import { BacktestComponent } from './features/backtest/backtest.component';
 import { KeysComponent } from './features/keys/keys.component';
+import { AnalyticsComponent } from './features/analytics/analytics.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
@@ -17,4 +18,5 @@ export const routes: Routes = [
   { path: 'portfolio', component: PortfolioComponent },
   { path: 'backtest', component: BacktestComponent },
   { path: 'keys', component: KeysComponent },
+  { path: 'analytics', component: AnalyticsComponent },
 ];

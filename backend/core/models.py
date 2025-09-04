@@ -51,3 +51,12 @@ class CredentialRow(SQLModel, table=True):
     api_key_enc: str
     api_secret_enc: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AuditLog(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ts: datetime = Field(default_factory=datetime.utcnow)
+    route: str
+    method: str
+    actor: str  # hashed token id
+    status: int
+    extra: dict = Field(sa_column=Column(JSON), default_factory=dict)
