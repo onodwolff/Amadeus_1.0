@@ -17,6 +17,8 @@
     "@angular/platform-browser": "^20.2.4",
     "@angular/platform-browser-dynamic": "^20.2.4",
     "@angular/router": "^20.2.4",
+    "ag-grid-angular": "^34.1.2",
+    "ag-grid-community": "^34.1.2",
     "lightweight-charts": "^5.0.8",
     "primeicons": "^7.0.0",
     "primeng": "^20.1.1",
