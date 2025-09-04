@@ -7,9 +7,7 @@ export class WsService {
   private socket?: WebSocket;
   private stop$ = new Subject<void>();
 
-  // Parsed JSON messages
   public readonly messages$ = new Subject<any>();
-  // Raw events (open/close/error/message Event objects)
   public readonly stream$ = new Subject<Event>();
 
   private buildBase(): string {
@@ -29,9 +27,7 @@ export class WsService {
   connect(path: string = ''): WebSocket | undefined {
     this.stop$.next();
 
-    // DEMO mode: synthesize a feed
     if ((environment as any).demo) {
-      // fake open
       queueMicrotask(() => this.stream$.next(new Event('open')));
       let last = 50000;
       interval(800).pipe(takeUntil(this.stop$)).subscribe(() => {
@@ -43,7 +39,6 @@ export class WsService {
       return undefined;
     }
 
-    // REAL WS
     const base = this.buildBase();
     const adj = path ? (path.startsWith('/') ? path : '/' + path) : '';
     const url = base + adj;
@@ -60,19 +55,15 @@ export class WsService {
     ws.onerror = (evt) => this.stream$.next(evt as any);
     ws.onmessage = (evt) => {
       this.stream$.next(evt);
-      try {
-        const data = JSON.parse(evt.data);
-        this.messages$.next(data);
-      } catch {
-        this.messages$.next(evt.data);
-      }
+      try { this.messages$.next(JSON.parse(evt.data)); }
+      catch { this.messages$.next(evt.data); }
     };
 
     return ws;
   }
 
   send(obj: any) {
-    if ((environment as any).demo) return; // no-op in demo
+    if ((environment as any).demo) return;
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(typeof obj === 'string' ? obj : JSON.stringify(obj));
     }
@@ -80,8 +71,6 @@ export class WsService {
 
   close() {
     this.stop$.next();
-    if (this.socket) {
-      try { this.socket.close(); } finally { this.socket = undefined; }
-    }
+    if (this.socket) { try { this.socket.close(); } finally { this.socket = undefined; } }
   }
 }

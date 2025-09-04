@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ApiService } from '../services/api.service';
 
 @Component({
   standalone: true,
@@ -19,4 +20,8 @@ export class DashboardPageComponent {
   pnl = signal(1432.12);
   strategies = signal(3);
   orders = signal(12);
+
+  constructor(private api: ApiService) {
+    this.api.status().subscribe();
+  }
 }

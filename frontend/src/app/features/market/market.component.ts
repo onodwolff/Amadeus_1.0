@@ -18,7 +18,7 @@ import {
   <div class="card">
     <div class="card-header flex items-center justify-between">
       <div>BTCUSDT • 1m</div>
-      <div class="text-text-muted text-xs">Lightweight Charts v5</div>
+      <div class="text-[#9aa4ad] text-xs">Lightweight Charts v5</div>
     </div>
     <div class="card-body p-0">
       <div #chartContainer class="h-[420px]"></div>

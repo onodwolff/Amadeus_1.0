@@ -9,6 +9,6 @@ export const routes: Routes = [
     { path: 'dashboard', component: DashboardPageComponent },
     { path: 'market', component: MarketComponent },
     { path: 'strategies', component: StrategiesModernComponent },
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  ]},
+    { path: '', pathMatch: 'full', redirectTo: 'dashboard' }
+  ]}
 ];

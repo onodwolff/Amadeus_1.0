@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": []
+  },
+  "files": [
+    "src/main.ts",
+    "src/app/app.routes.ts",
+    "src/app/app-root.component.ts",
+    "src/app/shell/app-shell.component.ts",
+    "src/environments/environment.ts"
+  ],
+  "include": ["src/**/*.d.ts"]
+}
