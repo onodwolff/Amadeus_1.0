@@ -96,3 +96,15 @@ class AppState:
         }
 
 app_state = AppState()
+
+
+async def get_state() -> AppState:
+    """Return the global :class:`AppState` instance.
+
+    The original project exposed a dependency provider used by various
+    FastAPI routes.  Only a very small subset of that behaviour is
+    required for the unit tests in this kata, so we simply return the
+    already initialised ``app_state`` instance.
+    """
+
+    return app_state
