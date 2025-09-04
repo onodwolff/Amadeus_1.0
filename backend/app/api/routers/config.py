@@ -1,92 +1,59 @@
-from __future__ import annotations
-
-import json
 from typing import Any, Dict
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Depends, Request
 
 from ...core.config import settings
-from ...services.state import get_state
-
-router = APIRouter(prefix="/config", tags=["config"])
-
-
-def _normalize_cfg(payload: Any) -> Dict[str, Any]:
-    """
-    Принимаем как { "cfg": {...} }, так и "сырой" объект {...}.
-    Возвращаем словарь-конфиг.
-    """
-    if payload is None:
-        return {}
-    if isinstance(payload, dict):
-        if "cfg" in payload and isinstance(payload["cfg"], dict):
-            return payload["cfg"]
-        return payload
-    raise HTTPException(status_code=400, detail="Config must be JSON object")
+from ...deps import auth_dep
+from ...models.schemas import ConfigEnvelope
+from ...services.configuration import ConfigService
 
 
-@router.get("")
-async def get_config():
-    """
-    Текущая runtime-конфигурация.
-    """
-    cfg = settings.runtime_cfg or {}
-    return {"cfg": cfg}
+# Require authentication for all configuration endpoints
+router = APIRouter(dependencies=[Depends(auth_dep)])
 
 
-@router.put("")
-async def put_config(request: Request):
-    """
-    Обновить конфиг (idempotent). Тело: либо {"cfg":{...}}, либо просто {...}.
-    """
+# In-memory configuration store
+_cfg_service = ConfigService({"mode": settings.mode, "exchange": settings.exchange})
+_saved_cfg: Dict[str, Any] = _cfg_service.cfg.copy()
+_default_cfg: Dict[str, Any] = _cfg_service.cfg.copy()
+
+
+@router.get("/config", response_model=ConfigEnvelope)
+async def get_config() -> ConfigEnvelope:
+    """Return current runtime configuration."""
+    return ConfigEnvelope(cfg=_cfg_service.cfg)
+
+
+@router.get("/config/default", response_model=ConfigEnvelope)
+async def get_default_config() -> ConfigEnvelope:
+    """Return default configuration."""
+    return ConfigEnvelope(cfg=_default_cfg)
+
+
+@router.put("/config")
+@router.post("/config")
+async def save_config(request: Request) -> ConfigEnvelope:
+    """Save provided configuration. Accepts JSON wrapper or raw string."""
     try:
-        data = await request.json()
+        data: Any = await request.json()
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON")
+        raw = await request.body()
+        data = raw.decode()
 
-    new_cfg = _normalize_cfg(data)
+    cfg_payload: Any
+    if isinstance(data, dict) and "cfg" in data:
+        cfg_payload = data["cfg"]
+    else:
+        cfg_payload = data
 
-    # Простейшая валидация (не строгая, чтобы не мешать работе UI)
-    if not isinstance(new_cfg, dict):
-        raise HTTPException(status_code=400, detail="Config must be object")
-
-    # сохраняем в settings и state
-    settings.runtime_cfg = new_cfg
-    state = await get_state()
-    state.cfg = new_cfg
-
-    return {"ok": True, "cfg": new_cfg}
-
-
-@router.post("")
-async def post_config(request: Request):
-    """
-    Alias к PUT: принимаем POST на тот же эндпоинт для совместимости со старым фронтом.
-    """
-    return await put_config(request)
+    new_cfg = _cfg_service.set_cfg(cfg_payload)
+    global _saved_cfg
+    _saved_cfg = new_cfg.copy()
+    return ConfigEnvelope(cfg=new_cfg)
 
 
-@router.get("/default")
-async def get_default_config():
-    """
-    Отдать дефолтный конфиг, если есть. Если нет — возвращаем текущий как наименее удивляющий вариант.
-    """
-    default_cfg = getattr(settings, "default_cfg", None)
-    if not isinstance(default_cfg, dict):
-        default_cfg = settings.runtime_cfg or {}
-    return {"cfg": default_cfg}
-
-
-@router.post("/restore")
-async def restore_config():
-    """
-    В «мягком» варианте просто возвращаем текущий runtime как подтверждение.
-    Если хочешь, можно здесь перечитывать YAML/JSON с диска.
-    """
-    cfg = settings.runtime_cfg or {}
-    # пример, если решишь считать YAML/JSON с диска:
-    # settings.load_yaml()
-    # cfg = settings.runtime_cfg or {}
-    state = await get_state()
-    state.cfg = cfg
-    return {"ok": True, "cfg": cfg}
+@router.post("/config/restore", response_model=ConfigEnvelope)
+async def restore_config() -> ConfigEnvelope:
+    """Restore last saved configuration."""
+    _cfg_service.set_cfg(_saved_cfg)
+    return ConfigEnvelope(cfg=_cfg_service.cfg)

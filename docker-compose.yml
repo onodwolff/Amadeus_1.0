@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports: [ "6379:6379" ]
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: amadeus
+      POSTGRES_USER: amadeus
+      POSTGRES_PASSWORD: amadeus
+    ports: [ "5432:5432" ]
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      API_TOKEN: ${API_TOKEN:-}
+    ports: [ "8000:8000" ]
+    depends_on: [ redis, postgres ]
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NODE_OPTIONS: --max_old_space_size=2048
+    ports: [ "4400:4400" ]
+    command: bash -lc "npm ci && npx ng serve --host 0.0.0.0 --port 4400"
