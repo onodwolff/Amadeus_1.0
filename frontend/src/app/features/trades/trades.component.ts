@@ -1,0 +1,54 @@
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  standalone: true,
+  selector: 'app-trades',
+  imports: [CommonModule, FormsModule],
+  template: `
+  <div class="p-4">
+    <h2 class="text-xl font-semibold mb-3">Trades</h2>
+    <div class="grid md:grid-cols-5 gap-2 mb-3">
+      <input class="border rounded p-2 w-full" [(ngModel)]="symbol" placeholder="symbol (e.g. BTCUSDT)">
+      <input class="border rounded p-2 w-full" [(ngModel)]="exchange" placeholder="exchange (binance/bybit)">
+      <input class="border rounded p-2 w-full" [(ngModel)]="category" placeholder="category (spot/usdt/linear)">
+      <input class="border rounded p-2 w-full" [(ngModel)]="strategy_id" placeholder="strategy id">
+      <button class="px-3 py-2 rounded bg-black text-white" (click)="load()">Load</button>
+    </div>
+    <div class="mb-3">
+      <a class="underline" [href]="csvUrl()" target="_blank">Download realized CSV</a>
+    </div>
+    <table class="w-full text-sm border">
+      <thead><tr class="text-left"><th>Time</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>Exchange</th><th>Category</th><th>Strategy</th></tr></thead>
+      <tbody>
+        @for (f of items(); track f.ts) {
+          <tr><td>{{ f.ts }}</td><td>{{ f.symbol }}</td><td>{{ f.side }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td><td>{{ f.exchange }}</td><td>{{ f.category }}</td><td>{{ f.strategy_id }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  `
+})
+export class TradesComponent {
+  symbol=''; exchange=''; category=''; strategy_id='';
+  items = signal<any[]>([]);
+  async load() {
+    const base = (window as any).__API__ || 'http://localhost:8000/api';
+    const params = new URLSearchParams();
+    if (this.symbol) params.set('symbol', this.symbol);
+    if (this.exchange) params.set('exchange', this.exchange);
+    if (this.category) params.set('category', this.category);
+    if (this.strategy_id) params.set('strategy_id', this.strategy_id);
+    this.items.set(await fetch(`${base}/trades/fills?${params.toString()}`).then(r=>r.json()).then(j=>j.items));
+  }
+  csvUrl() {
+    const base = (window as any).__API__ || 'http://localhost:8000/api';
+    const params = new URLSearchParams();
+    if (this.symbol) params.set('symbol', this.symbol);
+    if (this.exchange) params.set('exchange', this.exchange);
+    if (this.category) params.set('category', this.category);
+    if (this.strategy_id) params.set('strategy_id', this.strategy_id);
+    return `${base}/trades/realized.csv?${params.toString()}`;
+  }
+}
