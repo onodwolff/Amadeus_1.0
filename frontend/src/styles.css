@@ -1,8 +1,12 @@
 @import "tailwindcss";
+
+/* Dark base */
 :root { color-scheme: dark; }
 * { scrollbar-width: thin; scrollbar-color: #2a3138 transparent; }
 ::-webkit-scrollbar { height: 8px; width: 8px; }
 ::-webkit-scrollbar-thumb { background: #2a3138; border-radius: 8px; }
+
+/* Tokens & utilities */
 .card { @apply bg-[#111418] rounded-2xl shadow-[0_6px_24px_rgba(0,0,0,0.25)] border border-[#232a32]; }
 .card-header { @apply px-4 py-3 border-b border-[#232a32] text-sm text-[#9aa4ad]; }
 .card-body { @apply p-4; }
@@ -12,7 +16,22 @@
 .badge.ok { background:#052e1b; color:#22c55e; }
 .badge.err { background:#3a1111; color:#ef4444; }
 .price-up { color:#22c55e; } .price-down { color:#ef4444; }
-.skel { @apply relative overflow-hidden rounded-lg bg-[#141820]; }
-.skel::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent); transform:translateX(-100%); animation: skel 1.2s infinite; }
+
+/* Skeletons */
+.skel {
+  @apply relative overflow-hidden rounded-lg bg-[#141820];
+}
+.skel::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
+  transform:translateX(-100%);
+  animation: skel 1.2s infinite;
+}
 @keyframes skel { to { transform: translateX(100%);} }
-.skel-line { @apply skel h-4; }
+
+/* Line variant without applying custom class */
+.skel-line {
+  @apply relative overflow-hidden rounded-lg bg-[#141820] h-4;
+}
