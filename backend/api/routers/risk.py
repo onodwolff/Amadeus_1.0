@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends
-from backend.api.deps import require_token
-from backend.core.risk import RISK_ENGINE, RiskLimits
+from backend.core.risk import RISK_ENGINE
+from typing import Optional, Dict, Any
 
 router = APIRouter(prefix="/risk", tags=["risk"])
 
-@router.get("/limits")
-async def get_limits(_=Depends(require_token)):
-    return RISK_ENGINE.get_limits().model_dump()
+@router.get("/policies/{sid}")
+def get_policy(sid: str):
+    return RISK_ENGINE.policies.get(sid) or {"max_active_orders": 50, "max_dd": 0.5}
 
-@router.post("/limits")
-async def set_limits(data: dict, _=Depends(require_token)):
-    return RISK_ENGINE.set_limits(data).model_dump()
+@router.post("/policies/{sid}")
+def set_policy(sid: str, body: Dict[str, Any]):
+    RISK_ENGINE.set_policy(sid, max_active_orders=int(body.get("max_active_orders",50)), max_dd=float(body.get("max_dd",0.5)))
+    return {"ok": True, "policy": RISK_ENGINE.policies[sid]}
 
-@router.get("/state")
-async def get_state(_=Depends(require_token)):
-    return RISK_ENGINE.get_state().model_dump()
+@router.get("/log")
+def risk_log(limit: int = 200):
+    return {"items": RISK_ENGINE.log[-limit:]}

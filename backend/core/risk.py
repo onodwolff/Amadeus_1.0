@@ -1,50 +1,33 @@
-from __future__ import annotations
-from typing import Dict, Any, Optional
-from pydantic import BaseModel
+from typing import Optional, Dict, Any
+from dataclasses import dataclass
+from time import time
 
-class RiskLimits(BaseModel):
-    max_active_orders: int = 10
-    max_position_qty: float = 1.0  # per symbol absolute qty
-    forbid_market_orders: bool = False
-
-class RiskDecision(BaseModel):
+@dataclass
+class Decision:
     allowed: bool
-    reason: Optional[str] = None
-
-class RiskState(BaseModel):
-    active_orders: int = 0
-    last_reason: Optional[str] = None
+    reason: str = ""
 
 class RiskEngine:
     def __init__(self):
-        self._limits = RiskLimits()
-        self._state = RiskState()
+        self.policies: Dict[str, Dict[str, Any]] = {}  # strategy_id -> policy
+        self.log: list[dict] = []
 
-    def get_limits(self) -> RiskLimits:
-        return self._limits
+    def set_policy(self, strategy_id: str, *, max_active_orders: int = 50, max_dd: float = 0.2):
+        self.policies[strategy_id] = {"max_active_orders": max_active_orders, "max_dd": max_dd}
 
-    def set_limits(self, data: Dict[str, Any]) -> RiskLimits:
-        self._limits = RiskLimits(**{**self._limits.model_dump(), **data})
-        return self._limits
+    def pre_trade_check(self, *, strategy_id: str, open_orders_count: int, current_drawdown: float) -> Decision:
+        pol = self.policies.get(strategy_id, {"max_active_orders": 50, "max_dd": 0.5})
+        if open_orders_count > pol["max_active_orders"]:
+            self._log(strategy_id, "BLOCK", f"Too many open orders: {open_orders_count}>{pol['max_active_orders']}")
+            return Decision(False, "max_active_orders")
+        if current_drawdown > pol["max_dd"]:
+            self._log(strategy_id, "BLOCK", f"Drawdown {current_drawdown:.2%}>{pol['max_dd']:.2%}")
+            return Decision(False, "max_dd")
+        self._log(strategy_id, "ALLOW", "ok")
+        return Decision(True, "")
 
-    def get_state(self) -> RiskState:
-        return self._state
+    def _log(self, sid: str, action: str, msg: str):
+        self.log.append({"ts": int(time()*1000), "strategy_id": sid, "action": action, "msg": msg})
+        self.log = self.log[-1000:]
 
-    def pre_trade_check(self, *, req, open_orders_count: int, current_pos_qty: float) -> RiskDecision:
-        # forbid market orders
-        if self._limits.forbid_market_orders and getattr(req, "type", "market") == "market":
-            self._state.last_reason = "market orders are forbidden"
-            return RiskDecision(allowed=False, reason=self._state.last_reason)
-        # active orders limit
-        if open_orders_count >= self._limits.max_active_orders:
-            self._state.last_reason = f"active orders limit reached: {open_orders_count} >= {self._limits.max_active_orders}"
-            return RiskDecision(allowed=False, reason=self._state.last_reason)
-        # position size limit (post-trade)
-        new_qty = abs(current_pos_qty + (getattr(req, "qty", 0.0) * (1 if getattr(req, "side","buy")=="buy" else -1)))
-        if new_qty > self._limits.max_position_qty:
-            self._state.last_reason = f"position limit: |{new_qty}| > {self._limits.max_position_qty}"
-            return RiskDecision(allowed=False, reason=self._state.last_reason)
-        # passed
-        self._state.last_reason = None
-        return RiskDecision(allowed=True)
 RISK_ENGINE = RiskEngine()

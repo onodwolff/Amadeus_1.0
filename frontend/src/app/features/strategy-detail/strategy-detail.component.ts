@@ -8,8 +8,11 @@ import { ActivatedRoute } from '@angular/router';
   imports: [CommonModule],
   template: `
   <div class="p-4">
-    <h2 class="text-xl font-semibold mb-4">Strategy: {{ sid }}</h2>
-    <div class="grid md:grid-cols-2 gap-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold">Strategy: {{ sid }}</h2>
+      <a class="px-3 py-2 rounded bg-black text-white" [href]="csvUrl()" target="_blank">Download CSV</a>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mt-4">
       <div>
         <h3 class="font-medium mb-2">Metrics</h3>
         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -20,7 +23,18 @@ import { ActivatedRoute } from '@angular/router';
           <div class="border rounded p-3"><div class="text-gray-500">Win Rate</div><div class="text-lg font-bold">{{ rep()?.winrate | percent:'1.0-0' }}</div></div>
           <div class="border rounded p-3"><div class="text-gray-500">Profit Factor</div><div class="text-lg font-bold">{{ rep()?.profit_factor | number:'1.2-2' }}</div></div>
           <div class="border rounded p-3"><div class="text-gray-500">CAGR</div><div class="text-lg font-bold">{{ rep()?.cagr | percent:'1.2-2' }}</div></div>
-          <div class="border rounded p-3 col-span-2"><div class="text-gray-500">Realized PnL</div><div class="text-lg font-bold">{{ rep()?.pnl_total | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3 col-span-2"><div class="text-gray-500">Realized PnL (net)</div><div class="text-lg font-bold">{{ rep()?.pnl_total | number:'1.2-2' }}</div></div>
+        </div>
+        <div class="mt-4 border rounded p-3">
+          <div class="font-medium mb-2">Last Fills</div>
+          <table class="w-full text-sm">
+            <thead><tr class="text-left"><th>Time</th><th>Side</th><th>Qty</th><th>Price</th></tr></thead>
+            <tbody>
+              @for (f of fills(); track f.ts) {
+                <tr><td>{{ f.ts }}</td><td>{{ f.side }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td></tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
       <div>
@@ -36,6 +50,7 @@ import { ActivatedRoute } from '@angular/router';
 export class StrategyDetailComponent {
   route = inject(ActivatedRoute);
   rep = signal<any>({});
+  fills = signal<any[]>([]);
   sid = '';
   exchange = 'binance'; category='usdt'; symbol='BTCUSDT';
 
@@ -44,6 +59,12 @@ export class StrategyDetailComponent {
     const base = (window as any).__API__ || 'http://localhost:8000/api';
     const url = `${base}/strategy/${this.sid}/report?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
     this.rep.set(await fetch(url).then(r=>r.json()).then(j=>j.report));
+    this.fills.set(await fetch(`${base}/strategy/${this.sid}/fills?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`).then(r=>r.json()).then(j=>j.items));
+  }
+
+  csvUrl() {
+    const base = (window as any).__API__ || 'http://localhost:8000/api';
+    return `${base}/strategy/${this.sid}/trades.csv?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
   }
 
   points() {
