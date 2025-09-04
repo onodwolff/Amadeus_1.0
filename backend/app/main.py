@@ -12,6 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configuration endpoints (config, defaults, restore)
 app.include_router(config.router, prefix="/api")
 app.include_router(bot.router, prefix="/api")
 app.include_router(strategies.router, prefix="/api")
