@@ -1,3 +1,4 @@
+import inspect
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from backend.api.deps import require_token
 from backend.adapters.registry import get_adapter
@@ -24,7 +25,13 @@ async def ws_book(ws: WebSocket, exchange: str = Query("mock"), category: str = 
     except WebSocketDisconnect:
         pass
     finally:
-        if unsub: unsub()
+        if unsub:
+            if inspect.iscoroutinefunction(unsub):
+                await unsub()
+            else:
+                result = unsub()
+                if inspect.iscoroutine(result):
+                    await result
 
 @router.websocket("/ws/trades")
 async def ws_trades(ws: WebSocket, exchange: str = Query("mock"), category: str = Query("spot"), symbol: str = Query(...)):
@@ -40,4 +47,10 @@ async def ws_trades(ws: WebSocket, exchange: str = Query("mock"), category: str 
     except WebSocketDisconnect:
         pass
     finally:
-        if unsub: unsub()
+        if unsub:
+            if inspect.iscoroutinefunction(unsub):
+                await unsub()
+            else:
+                result = unsub()
+                if inspect.iscoroutine(result):
+                    await result
