@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { MarketComponent } from './features/market/market.component';
-import { StrategiesComponent } from './features/strategies/strategies.component';
+import { MarketPage } from './market/market.page';
 
-export const routes: Routes = [
-  { path: '', component: DashboardComponent },
-  { path: 'market', component: MarketComponent },
-  { path: 'strategies', component: StrategiesComponent },
+export const appRoutes: Routes = [
+  { path: '', redirectTo: 'market', pathMatch: 'full' },
+  { path: 'market', component: MarketPage },
+  // Заглушки под будущее:
+  // { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.page').then(m => m.DashboardPage) },
+  // { path: 'strategies', loadComponent: () => import('./strategies/strategies.page').then(m => m.StrategiesPage) },
+  // { path: 'risk', loadComponent: () => import('./risk/risk.page').then(m => m.RiskPage) },
+  // { path: 'history', loadComponent: () => import('./history/history.page').then(m => m.HistoryPage) },
+  // { path: 'logs', loadComponent: () => import('./logs/logs.page').then(m => m.LogsPage) },
 ];

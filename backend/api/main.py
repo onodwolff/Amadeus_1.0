@@ -1,17 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import market, strategies
+from .routers import trades, risk_ext, backtest
 
-app = FastAPI(title="Amadeus API")
+app = FastAPI(title="Amadeus API (patch v12 mega)")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:4400","http://localhost:4200","*"],
-    allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-app.include_router(market.router, prefix="/api")
-app.include_router(strategies.router, prefix="/api")
+app.include_router(trades.router, prefix="/api")
+app.include_router(risk_ext.router, prefix="/api")
+app.include_router(backtest.router, prefix="/api")
 
 @app.get("/healthz")
 def healthz(): return {"ok": True}

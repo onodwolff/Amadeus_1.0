@@ -1,0 +1,83 @@
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  standalone: true,
+  selector: 'app-strategy-detail',
+  imports: [CommonModule],
+  template: `
+  <div class="p-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold">Strategy: {{ sid }}</h2>
+      <a class="px-3 py-2 rounded bg-black text-white" [href]="csvUrl()" target="_blank">Download CSV</a>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mt-4">
+      <div>
+        <h3 class="font-medium mb-2">Metrics</h3>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="border rounded p-3"><div class="text-gray-500">Sharpe</div><div class="text-lg font-bold">{{ rep()?.sharpe | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Sortino</div><div class="text-lg font-bold">{{ rep()?.sortino | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Calmar</div><div class="text-lg font-bold">{{ rep()?.calmar | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Max DD</div><div class="text-lg font-bold">{{ rep()?.maxdd | percent:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Win Rate</div><div class="text-lg font-bold">{{ rep()?.winrate | percent:'1.0-0' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Profit Factor</div><div class="text-lg font-bold">{{ rep()?.profit_factor | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">CAGR</div><div class="text-lg font-bold">{{ rep()?.cagr | percent:'1.2-2' }}</div></div>
+          <div class="border rounded p-3 col-span-2"><div class="text-gray-500">Realized PnL (net)</div><div class="text-lg font-bold">{{ rep()?.pnl_total | number:'1.2-2' }}</div></div>
+        </div>
+        <div class="mt-4 border rounded p-3">
+          <div class="font-medium mb-2">Last Fills</div>
+          <table class="w-full text-sm">
+            <thead><tr class="text-left"><th>Time</th><th>Side</th><th>Qty</th><th>Price</th></tr></thead>
+            <tbody>
+              @for (f of fills(); track f.ts) {
+                <tr><td>{{ f.ts }}</td><td>{{ f.side }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="font-medium mb-2">Equity</h3>
+        <svg [attr.viewBox]="'0 0 400 200'" class="w-full border rounded">
+          <polyline [attr.points]="points()" fill="none" stroke="currentColor"></polyline>
+        </svg>
+      </div>
+    </div>
+  </div>
+  `
+})
+export class StrategyDetailComponent {
+  route = inject(ActivatedRoute);
+  rep = signal<any>({});
+  fills = signal<any[]>([]);
+  sid = '';
+  exchange = 'binance'; category='usdt'; symbol='BTCUSDT';
+
+  async ngOnInit() {
+    this.sid = this.route.snapshot.params['sid'];
+    const base = (window as any).__API__ || 'http://localhost:8000/api';
+    const url = `${base}/strategy/${this.sid}/report?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
+    this.rep.set(await fetch(url).then(r=>r.json()).then(j=>j.report));
+    this.fills.set(await fetch(`${base}/strategy/${this.sid}/fills?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`).then(r=>r.json()).then(j=>j.items));
+  }
+
+  csvUrl() {
+    const base = (window as any).__API__ || 'http://localhost:8000/api';
+    return `${base}/strategy/${this.sid}/trades.csv?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
+  }
+
+  points() {
+    const e = this.rep()?.equity || [];
+    if (!e.length) return '';
+    const xs = e.map((p:any)=>p.ts);
+    const ys = e.map((p:any)=>p.equity);
+    const minx = Math.min(...xs), maxx = Math.max(...xs);
+    const miny = Math.min(...ys), maxy = Math.max(...ys);
+    return e.map((p:any)=>{
+      const x = 10 + 380*((p.ts - minx)/Math.max(1,(maxx-minx)));
+      const y = 190 - 180*((p.equity - miny)/Math.max(1,(maxy-miny)));
+      return `${Math.round(x)},${Math.round(y)}`;
+    }).join(' ');
+  }
+}

@@ -1,7 +1,5 @@
 import asyncio
 
-import asyncio
-
 from backend.app.services.state import AppState
 from backend.app.services.risk.manager import RiskManager
 

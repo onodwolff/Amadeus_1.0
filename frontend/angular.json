@@ -14,14 +14,32 @@
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "tsConfig": "tsconfig.json"
-          }
+            "tsConfig": "tsconfig.app.json",
+            "assets": ["src/favicon.ico","src/assets"],
+            "styles": ["src/styles.scss"],
+            "scripts": []
+          },
+          "configurations": {
+            "development": {},
+            "production": {}
+          },
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": { "browserTarget": "amadeus-mvp-ui:build" }
+          "options": {
+            "buildTarget": "amadeus-mvp-ui:build",
+            "host": "127.0.0.1",
+            "port": 4400
+          },
+          "configurations": {
+            "development": { "buildTarget": "amadeus-mvp-ui:build:development" },
+            "production":   { "buildTarget": "amadeus-mvp-ui:build:production" }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }
-  }
+  },
+  "defaultProject": "amadeus-mvp-ui"
 }

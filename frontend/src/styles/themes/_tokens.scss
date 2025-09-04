@@ -1,0 +1,13 @@
+:root {
+  --bg-0:#0f1115; --bg-1:#141821; --surface:#1b2130;
+  --text-0:#e7eaf0; --text-1:#aab3c5;
+  --accent:#3ba3ff; --buy:#22c55e; --sell:#ef4444;
+  --gridline:#2a3346; --warn:#f59e0b; --error:#ef4444; --ok:#22c55e;
+  --card-radius:14px; --shadow:0 6px 20px rgba(0,0,0,.25);
+}
+[data-theme="light"] {
+  --bg-0:#f6f8fc; --bg-1:#ffffff; --surface:#ffffff;
+  --text-0:#101828; --text-1:#667085;
+  --accent:#0b7cff; --buy:#16a34a; --sell:#dc2626;
+  --gridline:#e5e7eb;
+}

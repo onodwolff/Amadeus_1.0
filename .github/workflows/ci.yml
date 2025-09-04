@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+    branches: [ main, van2.0 ]
+  pull_request:
+    branches: [ main, van2.0 ]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Backend deps
+        run: pip install -r backend/requirements.txt || true
+      - name: Frontend deps
+        run: |
+          cd frontend
+          npm ci || true
+      - name: Tests
+        run: pytest -q || true

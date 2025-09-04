@@ -1,11 +1,9 @@
-import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { AppComponent } from './app/app.component';
-import { routes } from './app/app.routes';
+import { appConfig } from './app/app.config';
+import { AppShellComponent } from './app/layout/app-shell.component';
+import { ThemeService } from './app/core/theme/theme.service';
 
-bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes), provideHttpClient()]
-})
-  .catch(err => console.error(err));
+bootstrapApplication(AppShellComponent, appConfig).then(ref => {
+  const theme = ref.injector.get(ThemeService);
+  theme.init();
+});

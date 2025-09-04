@@ -1,124 +1,65 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, timer, catchError, switchMap } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import {
-  BotStatus,
-  Config,
-  ConfigGetResponse,
-  ConfigResponse,
-  HistoryResponse,
-  HistoryStats,
-  OrderHistoryItem,
-  RiskStatus,
-  TradeHistoryItem,
-  ScanResponse,
-} from '../models';
-
-/** Статус бота: расширен под dashboard (metrics?, cfg?) */
-// Interface moved to models.ts
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly win = window as unknown as { __API__?: string; __TOKEN__?: string };
-  private readonly baseRoot: string = (this.win.__API__ || environment.apiBaseUrl || 'http://127.0.0.1:8100').replace(/\/$/, '');
-  readonly api: string = this.baseRoot + '/api';
-  private readonly _token: string = this.win.__TOKEN__ || environment.token || 'b1a7528e92de0ce1e456b7afad435b47ce870dcb41688de2af9e815a5a65372c';
+  private http = inject(HttpClient);
+  private win: any = (globalThis as any);
 
-  private auth() { return { headers: { 'Authorization': `Bearer ${this._token}` } }; }
-  get token(): string { return this._token; }
-
-  /** Шарим статус запуска бота между компонентами */
-  readonly running$ = new BehaviorSubject<boolean>(false);
-
-  constructor(private http: HttpClient) {
-    // Бэкап к WS: лёгкий пул статуса
-    timer(0, 2000).pipe(
-        switchMap(() => this.status().pipe(catchError(() => of<BotStatus | null>(null))))
-    ).subscribe((s) => {
-      if (s && typeof s.running === 'boolean') this.running$.next(!!s.running);
-    });
+  private get baseRoot(): string {
+    const envAny: any = environment as any;
+    const apiConf = envAny.api;
+    const httpBase: string =
+      (this.win.__API__) ||
+      (typeof apiConf === 'string' ? apiConf : apiConf?.baseUrl) ||
+      'http://127.0.0.1:8100';
+    return String(httpBase).replace(/\/$/, '');
   }
 
+  private get token(): string {
+    const envAny: any = environment as any;
+    return this.win.__TOKEN__ || envAny.token || envAny.api?.token || '';
+  }
+
+  private headers(): HttpHeaders {
+    const h: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.token) h['Authorization'] = `Bearer ${this.token}`;
+    return new HttpHeaders(h);
+  }
+
+  url(path: string): string {
+    if (!path.startsWith('/')) path = '/' + path;
+    return this.baseRoot + path;
+  }
+
+  get<T = any>(path: string): Observable<T>    { return this.http.get<T>(this.url(path), { headers: this.headers() }); }
+  post<T = any>(path: string, body: any): Observable<T> { return this.http.post<T>(this.url(path), body, { headers: this.headers() }); }
+  put<T = any>(path: string, body: any): Observable<T>  { return this.http.put<T>(this.url(path), body, { headers: this.headers() }); }
+  delete<T = any>(path: string): Observable<T>          { return this.http.delete<T>(this.url(path), { headers: this.headers() }); }
+
+  running$ = new BehaviorSubject<boolean>(false);
   setRunning(v: boolean) { this.running$.next(!!v); }
 
-  // ------------ BOT ------------
-  status(): Observable<BotStatus> { return this.http.get<BotStatus>(`${this.api}/bot/status`, this.auth()); }
-  start(body: unknown = {}): Observable<unknown> {
-    return this.http.post(`${this.api}/bot/start`, body ?? {}, this.auth());
-  }
-  stop():   Observable<unknown>   { return this.http.post(`${this.api}/bot/stop`,  {}, this.auth()); }
-  cmd(command: string, save = false): Observable<BotStatus> {
-    const q = save ? '?save=1' : '';
-    return this.http.post<BotStatus>(`${this.api}/bot/cmd/${command}${q}`, {}, this.auth());
-  }
+  status() { return this.get('/status'); }
+  start(body?: any) { return this.post('/start', body ?? {}); }
+  stop()  { return this.post('/stop', {}); }
+  cmd(command: string, payload: any = {}) { return this.post('/cmd', { cmd: command, ...payload }); }
 
-  // ----------- SCANNER ---------
-  scan(cfg?: Config): Observable<ScanResponse> {
-    const body = cfg ? { config: cfg } : {};
-    return this.http.post<ScanResponse>(`${this.api}/scanner/scan`, body, this.auth());
-  }
+  getConfig()         { return this.get('/config'); }
+  putConfig(cfg: any) { return this.put('/config', cfg); }
+  getDefaultConfig()  { return this.get('/config/default'); }
+  restoreConfig()     { return this.post('/config/restore', {}); }
 
-  // ----------- CONFIG ----------
-  getConfig(): Observable<ConfigGetResponse> { return this.http.get<ConfigGetResponse>(`${this.api}/config`, this.auth()); }
+  scan(body: any)     { return this.post('/scan', body); }
 
-  /**
-   * Универсальный сейв конфигурации:
-   * 1) PUT {cfg} → 2) PUT raw → 3) POST {cfg} → 4) POST raw
-   * Это гасит 405/400/422 при несовпадении контракта.
-   */
-  putConfig(cfg: Config | string): Observable<unknown> {
-    const url = `${this.api}/config`;
-    const bodyWrapped = { cfg };
-    const bodyRaw = cfg;
+  historyStats()                      { return this.get('/history/stats'); }
+  historyTrades(limit = 100, offset = 0) { return this.get(`/history/trades?limit=${limit}&offset=${offset}`); }
+  historyOrders(limit = 100, offset = 0) { return this.get(`/history/orders?limit=${limit}&offset=${offset}`); }
+  historyClear(kind: string)          { return this.post('/history/clear', { kind }); }
+  historyExportUrl(kind: string)      { return this.url(`/history/export?kind=${encodeURIComponent(kind)}`); }
 
-    const opts = this.auth();
-    const getStatus = (e: unknown) => (e as { status?: number } | undefined)?.status;
-    return this.http.put(url, bodyWrapped, opts).pipe(
-        catchError((err1: unknown) => {
-          if ([405, 400, 415, 422].includes(getStatus(err1) ?? 0)) {
-            return this.http.put(url, bodyRaw, opts).pipe(
-                catchError((err2: unknown) => {
-                  if ([405, 400, 415, 422].includes(getStatus(err2) ?? 0)) {
-                    return this.http.post(url, bodyWrapped, opts).pipe(
-                        catchError((err3: unknown) => {
-                          if ([405, 400, 415, 422].includes(getStatus(err3) ?? 0)) {
-                            return this.http.post(url, bodyRaw, opts);
-                          }
-                          throw err3;
-                        })
-                    );
-                  }
-                  throw err2;
-                })
-            );
-          }
-          throw err1;
-        })
-    );
-  }
-
-  getDefaultConfig(): Observable<ConfigResponse> { return this.http.get<ConfigResponse>(`${this.api}/config/default`, this.auth()); }
-  restoreConfig():    Observable<ConfigResponse> { return this.http.post<ConfigResponse>(`${this.api}/config/restore`, {}, this.auth()); }
-
-  // ------------ RISK -----------
-  getRiskStatus(): Observable<RiskStatus> { return this.http.get<RiskStatus>(`${this.api}/risk/status`, this.auth()); }
-  unlockRisk():    Observable<unknown> { return this.http.post(`${this.api}/risk/unlock`, {}, this.auth()); }
-
-  // ----------- HISTORY ---------
-  historyOrders(limit = 200, offset = 0): Observable<HistoryResponse<OrderHistoryItem>> {
-    return this.http.get<HistoryResponse<OrderHistoryItem>>(`${this.api}/history/orders?limit=${limit}&offset=${offset}`, this.auth());
-  }
-  historyTrades(limit = 200, offset = 0): Observable<HistoryResponse<TradeHistoryItem>> {
-    return this.http.get<HistoryResponse<TradeHistoryItem>>(`${this.api}/history/trades?limit=${limit}&offset=${offset}`, this.auth());
-  }
-  historyStats(): Observable<HistoryStats> {
-    return this.http.get<HistoryStats>(`${this.api}/history/stats`, this.auth());
-  }
-  historyClear(kind: 'orders'|'trades'|'all' = 'all'): Observable<HistoryStats> {
-    return this.http.post<HistoryStats>(`${this.api}/history/clear?kind=${kind}`, {}, this.auth());
-  }
-  historyExportUrl(kind: 'orders'|'trades' = 'orders'): string {
-    return `${this.api}/history/export.csv?kind=${kind}&token=${this._token}`;
-  }
+  getRiskStatus() { return this.get('/risk/status'); }
+  unlockRisk()    { return this.post('/risk/unlock', {}); }
 }
