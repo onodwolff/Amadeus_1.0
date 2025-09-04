@@ -4,6 +4,11 @@ from backend.api.deps import require_token
 from backend.plugins.sample_ema_crossover import SampleEmaCrossover
 from backend.adapters.registry import get_adapter
 from backend.core.risk import RISK_ENGINE
+from backend.core.db import get_session
+from backend.core.models import OrderRow, FillRow, PositionRow
+from backend.core.events import publish_fill
+from sqlmodel import Session
+import time
 
 router = APIRouter(prefix="/strategies", tags=["strategies"])
 _registry: Dict[str, Any] = {"sample_ema_crossover": SampleEmaCrossover()}
@@ -18,7 +23,7 @@ async def get_schema(sid: str, _=Depends(require_token)):
     return _registry[sid].schema
 
 @router.post("/{sid}/start")
-async def start(sid: str, cfg: Dict[str, Any], _=Depends(require_token)):
+async def start(sid: str, cfg: Dict[str, Any], session: Session = Depends(get_session), _=Depends(require_token)):
     if sid in _running:
         return {"ok": True, "already": True}
     strat = _registry[sid]
@@ -39,21 +44,41 @@ async def start(sid: str, cfg: Dict[str, Any], _=Depends(require_token)):
                 async def place_order(self, req_dict): 
                     req = type("Req",(object,), req_dict)()
                     # risk checks
-                    opens = await adapter.get_open_orders(symbol)  # list
-                    pos_list = await adapter.get_positions()
+                    opens = await adapter.get_open_orders(symbol)
                     pos_qty = 0.0
-                    for p in pos_list:
-                        if getattr(p, "symbol", "") == symbol:
-                            pos_qty = getattr(p, "qty", 0.0)
-                            break
                     decision = RISK_ENGINE.pre_trade_check(req=req, open_orders_count=len(opens), current_pos_qty=pos_qty)
                     if not decision.allowed:
                         print("[risk] rejected:", decision.reason)
                         return {"rejected": True, "reason": decision.reason}
+                    # assume market fill at last close
+                    try:
+                        ohlcv = await adapter.get_ohlcv(symbol, "1m", limit=1)
+                        px = ohlcv[-1].c if ohlcv else None
+                    except Exception:
+                        px = None
                     ack = await adapter.place_order(req)
+                    # persist order
+                    order_row = OrderRow(
+                        order_id=ack.order_id, client_order_id=req_dict.get("client_order_id"),
+                        symbol=req.symbol, side=req.side, qty=req.qty, price=px, status="filled",
+                        exchange=exchange, category=category
+                    )
+                    session.add(order_row)
+                    # persist fill
+                    fill_row = FillRow(
+                        order_id=ack.order_id, symbol=req.symbol, price=px or 0.0, qty=req.qty, side=req.side,
+                        exchange=exchange, category=category, ts=int(time.time()*1000), meta={"mode": self.mode}
+                    )
+                    session.add(fill_row)
+                    session.commit()
+                    # publish fill event
+                    await publish_fill({
+                        "order_id": ack.order_id, "symbol": req.symbol, "price": px, "qty": req.qty,
+                        "side": req.side, "exchange": exchange, "category": category, "ts": int(time.time()*1000)
+                    })
                     print("[order]", req_dict, ack.model_dump())
                     return ack.model_dump()
-            self.md=MD(); self.trader=Trader()
+            self.md=MD(); self.trader=Trader(); self.mode = cfg.get("mode","paper")
         def emit_metric(self, *a, **k): pass
         def now(self): 
             import time; return int(time.time()*1000)
