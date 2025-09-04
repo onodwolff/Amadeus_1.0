@@ -25,4 +25,6 @@ class BotStatus(BaseModel):
     cfg: Dict[str, Any] = Field(default_factory=dict)
 
 class ConfigEnvelope(BaseModel):
+    """Wrapper model for configuration payloads."""
+
     cfg: Dict[str, Any]

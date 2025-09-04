@@ -23,7 +23,7 @@ export class ApiService {
   private readonly win = window as unknown as { __API__?: string; __TOKEN__?: string };
   private readonly baseRoot: string = (this.win.__API__ || environment.apiBaseUrl || 'http://127.0.0.1:8100').replace(/\/$/, '');
   readonly api: string = this.baseRoot + '/api';
-  private readonly _token: string = this.win.__TOKEN__ || 'b1a7528e92de0ce1e456b7afad435b47ce870dcb41688de2af9e815a5a65372c';
+  private readonly _token: string = this.win.__TOKEN__ || environment.token || 'b1a7528e92de0ce1e456b7afad435b47ce870dcb41688de2af9e815a5a65372c';
 
   private auth() { return { headers: { 'Authorization': `Bearer ${this._token}` } }; }
   get token(): string { return this._token; }
@@ -44,7 +44,9 @@ export class ApiService {
 
   // ------------ BOT ------------
   status(): Observable<BotStatus> { return this.http.get<BotStatus>(`${this.api}/bot/status`, this.auth()); }
-  start():  Observable<unknown>   { return this.http.post(`${this.api}/bot/start`, {}, this.auth()); }
+  start(body: unknown = {}): Observable<unknown> {
+    return this.http.post(`${this.api}/bot/start`, body ?? {}, this.auth());
+  }
   stop():   Observable<unknown>   { return this.http.post(`${this.api}/bot/stop`,  {}, this.auth()); }
   cmd(command: string, save = false): Observable<BotStatus> {
     const q = save ? '?save=1' : '';

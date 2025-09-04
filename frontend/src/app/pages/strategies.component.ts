@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ApiService } from '../services/api.service';
 
 @Component({
   standalone: true,
@@ -10,13 +11,17 @@ import { Component } from '@angular/core';
   `
 })
 export class StrategiesComponent {
-  async start(){
-    await fetch('http://localhost:8100/api/bot/start', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({strategy:'sample_ema', config:{symbol:'BTCUSDT', tf:'1m', fast:9, slow:21, qty:0.001}})
-    });
+  constructor(private api: ApiService) {}
+
+  start() {
+    const body = {
+      strategy: 'sample_ema',
+      config: { symbol: 'BTCUSDT', tf: '1m', fast: 9, slow: 21, qty: 0.001 }
+    };
+    this.api.start(body).subscribe();
   }
-  async stop(){
-    await fetch('http://localhost:8100/api/bot/stop', {method:'POST'});
+
+  stop() {
+    this.api.stop().subscribe();
   }
 }
