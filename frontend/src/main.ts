@@ -1,15 +1,8 @@
-// включаем зону, чтобы отрисовка и детект изменений точно работали
-import 'zone.js';
-
+import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { AppComponent } from './app/app.component';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { routes } from './app/app.routes';
 
-// минимально-необходимые провайдеры на весь апп
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideHttpClient(withFetch()),
-    provideAnimations(),
-  ],
-}).catch(err => console.error(err));
+bootstrapApplication(AppComponent, { providers: [provideRouter(routes)] })
+  .catch(err => console.error(err));

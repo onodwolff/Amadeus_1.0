@@ -1,26 +1,25 @@
-from __future__ import annotations
-from fastapi import APIRouter, Depends
-from ...deps import state_dep
-from ...models.schemas import BotStatus
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from ...services.state import app_state
 
-router = APIRouter(prefix="/bot", tags=["bot"])
+router = APIRouter()
 
-@router.post("/start", response_model=BotStatus)
-async def start_bot(state = Depends(state_dep)):
-    await state.start_bot()
-    return state.status()
+class StartReq(BaseModel):
+    strategy: str = "sample_ema"
+    config: dict = {"symbol":"BTCUSDT","tf":"1m","fast":9,"slow":21,"qty":0.001}
 
-@router.post("/stop", response_model=BotStatus)
-async def stop_bot(state = Depends(state_dep)):
-    await state.stop_bot()
-    return state.status()
+@router.get("/status")
+async def status():
+    return app_state.status()
 
-@router.get("/status", response_model=BotStatus)
-async def get_status(state = Depends(state_dep)):
-    return state.status()
+@router.post("/bot/start")
+async def start(req: StartReq):
+    if app_state.started:
+        raise HTTPException(400, "Already started")
+    await app_state.start(req.strategy, req.config)
+    return {"ok": True}
 
-
-@router.post("/cmd/{cmd}", response_model=BotStatus)
-async def handle_cmd(cmd: str, save: bool = False, state = Depends(state_dep)):
-    await state.handle_cmd(cmd, save=save)
-    return state.status()
+@router.post("/bot/stop")
+async def stop():
+    await app_state.stop()
+    return {"ok": True}
