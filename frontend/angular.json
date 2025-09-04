@@ -1,15 +1,15 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 2,
+  "version": 1,
   "projects": {
     "amadeus-mvp-ui": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
-      "targets": {
+      "architect": {
         "build": {
-          "executor": "@angular-devkit/build-angular:browser-esbuild",
+          "builder": "@angular-devkit/build-angular:browser-esbuild",
           "options": {
             "outputPath": "dist",
             "index": "src/index.html",
@@ -31,7 +31,7 @@
           "defaultConfiguration": "development"
         },
         "serve": {
-          "executor": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "buildTarget": "amadeus-mvp-ui:build",
             "host": "127.0.0.1",
