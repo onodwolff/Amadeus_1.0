@@ -10,8 +10,10 @@
 .card { @apply bg-[#111418] rounded-2xl shadow-[0_6px_24px_rgba(0,0,0,0.25)] border border-[#232a32]; }
 .card-header { @apply px-4 py-3 border-b border-[#232a32] text-sm text-[#9aa4ad]; }
 .card-body { @apply p-4; }
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-[#1a1f25] hover:bg-[#151a20] text-sm; }
-.btn.primary { @apply bg-[#60a5fa] text-white hover:brightness-110; }
+.btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-[#1a1f25] text-sm; }
+.btn.primary { @apply bg-[#60a5fa] text-white; }
+.btn:hover { @apply bg-[#151a20]; }
+.btn.primary:hover { @apply brightness-110; }
 .badge { @apply text-xs rounded-lg px-2 py-1 bg-[#1a1f25] text-[#9aa4ad]; }
 .badge.ok { background:#052e1b; color:#22c55e; }
 .badge.err { background:#3a1111; color:#ef4444; }
