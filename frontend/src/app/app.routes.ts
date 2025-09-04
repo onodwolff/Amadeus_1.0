@@ -1,8 +1,13 @@
 import { Routes } from '@angular/router';
-import { TradesComponent } from './features/trades/trades.component';
-import { RiskComponent } from './features/risk/risk.component';
-
+import { AppShellComponent } from './shell/app-shell.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MarketComponent } from './features/market/market.component';
+import { StrategiesModernComponent } from './features/strategies/strategies-modern.component';
 export const routes: Routes = [
-  { path: 'trades', component: TradesComponent },
-  { path: 'riskx', component: RiskComponent },
+  { path: '', component: AppShellComponent, children: [
+    { path: 'dashboard', component: DashboardComponent },
+    { path: 'market', component: MarketComponent },
+    { path: 'strategies', component: StrategiesModernComponent },
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  ]},
 ];
