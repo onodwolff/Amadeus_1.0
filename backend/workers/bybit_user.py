@@ -7,6 +7,7 @@ from backend.core.keys import get_keys
 from backend.core.models import FillRow
 from backend.core.events import publish_fill
 from backend.core.pnl import apply_fill
+from backend.workers._util_strategy_map import find_strategy_by_order_id
 
 WS_PRIV = "wss://stream.bybit.com/v5/private"
 
@@ -30,26 +31,30 @@ class BybitUserDataWorker:
                 return
             key, secret = creds
         async with websockets.connect(WS_PRIV, ping_interval=20, ping_timeout=20) as ws:
-            # auth per bybit v5
             expires = int((time.time() + 60) * 1000)
             sig = _sign(secret, expires)
             await ws.send(json.dumps({"op":"auth","args":[key, expires, sig]}))
-            await ws.recv()  # auth resp
-            await ws.send(json.dumps({"op":"subscribe","args":[f"execution.{self.category}"]}))
+            await ws.recv()
+            await ws.send(json.dumps({"op":"subscribe","args":[f"execution.{self.category}", f"order.{self.category}", f"wallet.{self.category}"]}))
             while self._running:
                 raw = await ws.recv()
                 msg = json.loads(raw)
-                if (msg.get("topic","") or "").startswith("execution."):
+                topic = msg.get("topic","")
+                if topic.startswith("execution."):
                     for e in msg.get("data", []):
                         side = "buy" if str(e.get("side","Buy")).lower().startswith("b") else "sell"
+                        oid = str(e.get("orderId",""))
                         fr = FillRow(
-                            order_id=str(e.get("orderId","")), symbol=e.get("symbol",""), price=float(e.get("execPrice",0)),
-                            qty=float(e.get("execQty",0)), side=side, exchange="bybit", category=self.category, ts=int(e.get("execTime", time.time()*1000)), meta=e
+                            order_id=oid, symbol=e.get("symbol",""), price=float(e.get("execPrice",0)),
+                            qty=float(e.get("execQty",0)), side=side, exchange="bybit", category=self.category, ts=int(e.get("execTime", time.time()*1000)), meta=e,
+                            strategy_id=None
                         )
                         with Session(engine) as db:
+                            fr.strategy_id = find_strategy_by_order_id(db, oid)
                             db.add(fr); db.commit()
                             apply_fill(db, fr); db.commit()
-                        await publish_fill({"order_id": fr.order_id, "symbol": fr.symbol, "price": fr.price, "qty": fr.qty, "side": fr.side, "exchange": fr.exchange, "category": fr.category, "ts": fr.ts})
+                        await publish_fill({"order_id": fr.order_id, "symbol": fr.symbol, "price": fr.price, "qty": fr.qty, "side": fr.side, "exchange": fr.exchange, "category": fr.category, "ts": fr.ts, "strategy_id": fr.strategy_id})
+                # order./wallet. topics are subscribed for completeness (parsing can be added later)
 
     async def start(self):
         if self._task and not self._task.done():

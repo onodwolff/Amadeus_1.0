@@ -7,6 +7,7 @@ from backend.core.keys import get_keys
 from backend.core.events import publish_fill
 from backend.core.models import FillRow
 from backend.core.pnl import apply_fill
+from backend.workers._util_strategy_map import find_strategy_by_order_id
 
 REST = "https://api.binance.com"
 WS = "wss://stream.binance.com:9443/ws"
@@ -35,16 +36,6 @@ class BinanceSpotUserDataWorker:
             r.raise_for_status()
             return r.json()["listenKey"]
 
-    async def _keepalive(self, lk: str):
-        # Binance Spot listenKey valid 60 minutes; refresh every ~30m
-        while self._running:
-            try:
-                async with httpx.AsyncClient(base_url=REST, timeout=10.0, headers={}) as client:
-                    await client.put("/api/v3/userDataStream", params={"listenKey": lk})
-            except Exception:
-                pass
-            await asyncio.sleep(30*60)
-
     async def _ws_loop(self):
         with Session(engine) as db:
             lk = await self._get_listen_key(db)
@@ -52,27 +43,23 @@ class BinanceSpotUserDataWorker:
                 return
         url = f"{WS}/{lk}"
         async with websockets.connect(url, ping_interval=20, ping_timeout=20) as ws:
-            ka = asyncio.create_task(self._keepalive(lk))
-            try:
-                while self._running:
-                    msg = json.loads(await ws.recv())
-                    e = msg.get("e","")
-                    if e == "executionReport":
-                        side = "buy" if msg.get("S")=="BUY" else "sell"
-                        symbol = msg.get("s","")
-                        price = float(msg.get("L") or 0)
-                        qty = float(msg.get("l") or 0)
-                        ts = int(msg.get("E", time.time()*1000))
-                        if qty>0 and price>0:
-                            # persist + publish + pnl
-                            with Session(engine) as db:
-                                fr = FillRow(order_id=str(msg.get("i","")), symbol=symbol, price=price, qty=qty, side=side, exchange="binance", category="spot", ts=ts, meta=msg)
-                                db.add(fr); db.commit()
-                                apply_fill(db, fr)
-                                db.commit()
-                            await publish_fill({"order_id": str(msg.get("i","")), "symbol": symbol, "price": price, "qty": qty, "side": side, "exchange": "binance", "category": "spot", "ts": ts})
-            finally:
-                ka.cancel()
+            while self._running:
+                msg = json.loads(await ws.recv())
+                e = msg.get("e","")
+                if e == "executionReport":
+                    side = "buy" if msg.get("S")=="BUY" else "sell"
+                    symbol = msg.get("s","")
+                    price = float(msg.get("L") or 0)
+                    qty = float(msg.get("l") or 0)
+                    ts = int(msg.get("E", time.time()*1000))
+                    oid = str(msg.get("i",""))
+                    if qty>0 and price>0:
+                        with Session(engine) as db:
+                            sid = find_strategy_by_order_id(db, oid)
+                            fr = FillRow(order_id=oid, symbol=symbol, price=price, qty=qty, side=side, exchange="binance", category="spot", ts=ts, meta=msg, strategy_id=sid)
+                            db.add(fr); db.commit()
+                            apply_fill(db, fr); db.commit()
+                        await publish_fill({"order_id": oid, "symbol": symbol, "price": price, "qty": qty, "side": side, "exchange": "binance", "category": "spot", "ts": ts, "strategy_id": sid})
 
     async def start(self):
         if self._task and not self._task.done():

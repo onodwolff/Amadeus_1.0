@@ -7,6 +7,7 @@ from backend.core.keys import get_keys
 from backend.core.models import FillRow
 from backend.core.events import publish_fill
 from backend.core.pnl import apply_fill
+from backend.workers._util_strategy_map import find_strategy_by_order_id
 
 BINANCE_FUT = "https://fapi.binance.com"
 WS_BASE = "wss://fstream.binance.com/ws"
@@ -37,17 +38,6 @@ class BinanceUserDataWorker:
             r.raise_for_status()
             return r.json()["listenKey"]
 
-    async def _keepalive(self, session: Session):
-        # Valid 60 minutes -> refresh every ~30m
-        while self._running and self._listen_key:
-            try:
-                headers = await self._get_headers(session)
-                async with httpx.AsyncClient(base_url=BINANCE_FUT, timeout=20.0, headers=headers) as client:
-                    await client.put("/fapi/v1/listenKey", params={"listenKey": self._listen_key})
-            except Exception:
-                pass
-            await asyncio.sleep(30*60)
-
     async def _ws_loop(self):
         with Session(engine) as db:
             self._listen_key = await self._get_listen_key(db)
@@ -61,18 +51,20 @@ class BinanceUserDataWorker:
                 if msg.get("e") == "ORDER_TRADE_UPDATE":
                     o = msg.get("o", {})
                     if o.get("X") in ("FILLED","PARTIALLY_FILLED") and float(o.get("l",0))>0:
+                        oid = str(o.get("i"))
                         with Session(engine) as db:
+                            sid = find_strategy_by_order_id(db, oid)
                             fr = FillRow(
-                                order_id=str(o.get("i")), symbol=o.get("s"), price=float(o.get("L",0)),
+                                order_id=oid, symbol=o.get("s"), price=float(o.get("L",0)),
                                 qty=float(o.get("l",0)), side=("buy" if o.get("S")=="BUY" else "sell"),
-                                exchange="binance", category="usdt", ts=int(msg.get("E", time.time()*1000)), meta=o
+                                exchange="binance", category="usdt", ts=int(msg.get("E", time.time()*1000)), meta=o, strategy_id=sid
                             )
                             db.add(fr); db.commit()
                             apply_fill(db, fr); db.commit()
                         await publish_fill({
-                            "order_id": str(o.get("i")), "symbol": o.get("s"), "price": float(o.get("L",0)),
+                            "order_id": oid, "symbol": o.get("s"), "price": float(o.get("L",0)),
                             "qty": float(o.get("l",0)), "side": "buy" if o.get("S")=="BUY" else "sell",
-                            "exchange": "binance", "category": "usdt", "ts": int(msg.get("E", time.time()*1000))
+                            "exchange": "binance", "category": "usdt", "ts": int(msg.get("E", time.time()*1000)), "strategy_id": sid
                         })
 
     async def start(self):
