@@ -30,12 +30,8 @@
             "port": 4400
           },
           "configurations": {
-            "development": {
-              "buildTarget": "amadeus-mvp-ui:build:development"
-            },
-            "production": {
-              "buildTarget": "amadeus-mvp-ui:build:production"
-            }
+            "development": { "buildTarget": "amadeus-mvp-ui:build:development" },
+            "production":   { "buildTarget": "amadeus-mvp-ui:build:production" }
           },
           "defaultConfiguration": "development"
         }

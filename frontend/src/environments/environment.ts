@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
-  api: (window as any).__API__ || 'http://localhost:8000/api',
-  ws:  (window as any).__WS__  || 'ws://localhost:8000/api/market/ws',
+  api: 'http://127.0.0.1:8100',
+  ws:  'ws://127.0.0.1:8100/ws',
+  token: ''
 };
