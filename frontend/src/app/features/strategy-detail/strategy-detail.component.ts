@@ -13,11 +13,14 @@ import { ActivatedRoute } from '@angular/router';
       <div>
         <h3 class="font-medium mb-2">Metrics</h3>
         <div class="grid grid-cols-2 gap-3 text-sm">
-          <div class="border rounded p-3"><div class="text-gray-500">Sharpe</div><div class="text-lg font-bold">{{ report()?.sharpe | number:'1.2-2' }}</div></div>
-          <div class="border rounded p-3"><div class="text-gray-500">Calmar</div><div class="text-lg font-bold">{{ report()?.calmar | number:'1.2-2' }}</div></div>
-          <div class="border rounded p-3"><div class="text-gray-500">Max DD</div><div class="text-lg font-bold">{{ report()?.maxdd | percent:'1.2-2' }}</div></div>
-          <div class="border rounded p-3"><div class="text-gray-500">Win Rate</div><div class="text-lg font-bold">{{ report()?.winrate | percent:'1.0-0' }}</div></div>
-          <div class="border rounded p-3 col-span-2"><div class="text-gray-500">Realized PnL</div><div class="text-lg font-bold">{{ report()?.pnl_total | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Sharpe</div><div class="text-lg font-bold">{{ rep()?.sharpe | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Sortino</div><div class="text-lg font-bold">{{ rep()?.sortino | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Calmar</div><div class="text-lg font-bold">{{ rep()?.calmar | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Max DD</div><div class="text-lg font-bold">{{ rep()?.maxdd | percent:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Win Rate</div><div class="text-lg font-bold">{{ rep()?.winrate | percent:'1.0-0' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">Profit Factor</div><div class="text-lg font-bold">{{ rep()?.profit_factor | number:'1.2-2' }}</div></div>
+          <div class="border rounded p-3"><div class="text-gray-500">CAGR</div><div class="text-lg font-bold">{{ rep()?.cagr | percent:'1.2-2' }}</div></div>
+          <div class="border rounded p-3 col-span-2"><div class="text-gray-500">Realized PnL</div><div class="text-lg font-bold">{{ rep()?.pnl_total | number:'1.2-2' }}</div></div>
         </div>
       </div>
       <div>
@@ -32,7 +35,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class StrategyDetailComponent {
   route = inject(ActivatedRoute);
-  report = signal<any>({});
+  rep = signal<any>({});
   sid = '';
   exchange = 'binance'; category='usdt'; symbol='BTCUSDT';
 
@@ -40,11 +43,11 @@ export class StrategyDetailComponent {
     this.sid = this.route.snapshot.params['sid'];
     const base = (window as any).__API__ || 'http://localhost:8000/api';
     const url = `${base}/strategy/${this.sid}/report?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
-    this.report.set(await fetch(url).then(r=>r.json()).then(j=>j.report));
+    this.rep.set(await fetch(url).then(r=>r.json()).then(j=>j.report));
   }
 
   points() {
-    const e = this.report()?.equity || [];
+    const e = this.rep()?.equity || [];
     if (!e.length) return '';
     const xs = e.map((p:any)=>p.ts);
     const ys = e.map((p:any)=>p.equity);

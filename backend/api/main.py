@@ -1,23 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import strategy_analytics
-from backend.workers.manager import MANAGER
+from .routers import strategy_analytics, dashboard
 
-app = FastAPI(title="Amadeus API (patch v8)")
-
-@app.on_event("startup")
-async def _startup():
-    try:
-        await MANAGER.start()
-    except Exception:
-        pass
-
-@app.on_event("shutdown")
-async def _shutdown():
-    try:
-        await MANAGER.stop()
-    except Exception:
-        pass
+app = FastAPI(title="Amadeus API (patch v9)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,6 +11,7 @@ app.add_middleware(
 )
 
 app.include_router(strategy_analytics.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
 
 @app.get("/healthz")
 def healthz(): return {"ok": True}

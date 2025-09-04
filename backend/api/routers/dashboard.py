@@ -1,25 +1,22 @@
 from fastapi import APIRouter, Depends
-from sqlmodel import select
-from backend.api.deps import require_token
+from sqlmodel import Session, select
 from backend.core.db import get_session
-from backend.core.models import FillRow, BalanceRow
-from backend.adapters.registry import get_adapter
+from backend.core.models import EquitySnapshotRow
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
-@router.get("/summary")
-async def summary(exchange: str = "binance", category: str = "usdt", symbol: str = "BTCUSDT", session=Depends(get_session), _=Depends(require_token)):
-    # realized pnl as sum(side * qty * price delta naive); for demo, simply count buys/sells total
-    fills = list(session.exec(select(FillRow).order_by(FillRow.id.asc())))
-    pos = 0.0
-    cash = 0.0
-    for f in fills:
-        sgn = 1 if f.side == "sell" else -1
-        cash += sgn * f.qty * f.price
-        pos += (-sgn) * f.qty  # buy increases pos, sell decreases
-    # unrealized using last price
-    adapter = get_adapter(exchange, category)
-    candles = await adapter.get_ohlcv(symbol, "1m", limit=1)
-    last = candles[-1].c if candles else 0.0
-    equity = cash + pos * last
-    return {"realized_cash": cash, "position_qty": pos, "last_price": last, "equity": equity}
+@router.get("/summary/strategies")
+def per_strategy_summary(session: Session = Depends(get_session)):
+    # last equity per (strategy_id, symbol, exchange, category)
+    stmt = select(EquitySnapshotRow).order_by(EquitySnapshotRow.symbol, EquitySnapshotRow.strategy_id, EquitySnapshotRow.ts.desc())
+    rows = list(session.exec(stmt))
+    latest = {}
+    for r in rows:
+        key = (r.strategy_id or "n/a", r.symbol, r.exchange, r.category)
+        if key not in latest:
+            latest[key] = r
+    out = [{
+        "strategy_id": k[0], "symbol": k[1], "exchange": k[2], "category": k[3],
+        "equity": v.equity, "ts": v.ts
+    } for k,v in latest.items()]
+    return {"items": out}

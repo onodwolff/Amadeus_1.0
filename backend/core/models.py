@@ -60,7 +60,7 @@ class AuditLog(SQLModel, table=True):
     ts: datetime = Field(default_factory=datetime.utcnow)
     route: str
     method: str
-    actor: str  # hashed token id
+    actor: str
     status: int
     extra: dict = Field(sa_column=Column(JSON), default_factory=dict)
 
@@ -73,7 +73,9 @@ class RealizedPnlRow(SQLModel, table=True):
     ts: int
     qty: float
     price: float
-    pnl: float  # realized PnL for this fill closing part of position
+    pnl: float                 # realized PnL from position close (+/-)
+    fee: float = 0.0           # trading fee (negative reduces pnl)
+    funding: float = 0.0       # funding payment (+ receive, - pay)
 
 class EquitySnapshotRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
