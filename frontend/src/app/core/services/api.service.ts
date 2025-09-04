@@ -11,8 +11,8 @@ export class ApiService {
     return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
   }
 
-  async getOHLCV(symbol: string, tf = '1m', limit = 200): Promise<Candle[]> {
-    const url = `${this.base}/market/ohlcv?symbol=${encodeURIComponent(symbol)}&tf=${tf}&limit=${limit}`;
+  async getOHLCV(symbol: string, tf = '1m', limit = 200, exchange='mock', category='spot'): Promise<Candle[]> {
+    const url = `${this.base}/market/ohlcv?exchange=${exchange}&category=${category}&symbol=${encodeURIComponent(symbol)}&tf=${tf}&limit=${limit}`;
     const r = await fetch(url, { headers: this.headers() });
     return await r.json();
   }
@@ -33,6 +33,22 @@ export class ApiService {
   }
   async stopStrategy(id: string) {
     const r = await fetch(`${this.base}/strategies/${id}/stop`, { method:'POST', headers: this.headers() });
+    return await r.json();
+  }
+
+  // Risk API
+  async getRiskLimits() {
+    const r = await fetch(`${this.base}/risk/limits`, { headers: this.headers() });
+    return await r.json();
+    }
+  async setRiskLimits(body: any) {
+    const r = await fetch(`${this.base}/risk/limits`, {
+      method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body)
+    });
+    return await r.json();
+  }
+  async getRiskState() {
+    const r = await fetch(`${this.base}/risk/state`, { headers: this.headers() });
     return await r.json();
   }
 }
