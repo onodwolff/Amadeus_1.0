@@ -32,7 +32,6 @@ export class OrderbookComponent implements OnInit {
     ] as ColDef[],
     rowData: [],
     animateRows: false,
-    // удалено: suppressAggAtRootLevel (в v34 такого поля нет)
     getRowId: params => `${params.data?.side}-${params.data?.price}`
   };
 

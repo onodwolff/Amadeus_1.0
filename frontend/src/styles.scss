@@ -1,15 +1,18 @@
+
 @use 'styles/themes/_tokens';
 
-/* PrimeNG: БЕЗ ресурса primeng/resources/primeng.min.css */
-/* Icons */
+/* PrimeNG Theme (CSS only, no ESM) */
+@import '@primeng/themes/aura/theme.css';
+
+/* PrimeIcons */
 @import 'primeicons/primeicons.css';
 
-/* AG Grid themes (Quartz) */
+/* AG Grid Quartz */
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
 @import 'ag-grid-community/styles/ag-theme-quartz-dark.css';
 
-/* Глобальные базовые стили */
+/* Base */
 html, body {
   height: 100%;
   background: var(--bg-0);
