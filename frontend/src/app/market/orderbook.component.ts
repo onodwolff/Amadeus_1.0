@@ -1,3 +1,4 @@
+
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridOptions } from 'ag-grid-community';
@@ -10,7 +11,7 @@ import { Subject, bufferTime } from 'rxjs';
   template: `
     <ag-grid-angular
       style="width: 100%; height: 420px;"
-      class="ag-theme-alpine-dark"
+      class="ag-theme-quartz-dark"
       [gridOptions]="gridOptions"
       (gridReady)="onGridReady($event)">
     </ag-grid-angular>
@@ -31,8 +32,7 @@ export class OrderbookComponent implements OnInit {
     ] as ColDef[],
     rowData: [],
     animateRows: false,
-    suppressAnimationFrame: false,
-    suppressAggAtRootLevel: true,
+    // удалено: suppressAggAtRootLevel (в v34 такого поля нет)
     getRowId: params => `${params.data?.side}-${params.data?.price}`
   };
 

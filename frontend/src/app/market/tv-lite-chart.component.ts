@@ -1,3 +1,4 @@
+
 import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { createChart, ISeriesApi, CandlestickData } from 'lightweight-charts';
 
@@ -21,7 +22,8 @@ export class TvLiteChartComponent implements AfterViewInit, OnDestroy {
     const css = getComputedStyle(document.documentElement);
     this.chart = createChart(this.host.nativeElement, {
       layout: {
-        background: { type:'solid', color: css.getPropertyValue('--bg-1').trim() },
+        // для lightweight-charts v4 используем простую форму background:{ color }
+        background: { color: css.getPropertyValue('--bg-1').trim() },
         textColor: css.getPropertyValue('--text-1').trim()
       },
       grid: {

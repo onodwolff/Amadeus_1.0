@@ -1,13 +1,14 @@
+
 import { Component, TrackByFunction } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { NgFor, DatePipe, NgClass } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 
 type Trade = { ts:number; price:number; size:number; side:'buy'|'sell' };
 
 @Component({
   selector: 'app-trades-virtual',
   standalone: true,
-  imports: [ScrollingModule, NgFor, DatePipe, NgClass],
+  imports: [ScrollingModule, DatePipe, NgClass],
   template: `
   <cdk-virtual-scroll-viewport itemSize="28" class="vscroll">
     <div *cdkVirtualFor="let t of trades; trackBy: trackBy" [ngClass]="t.side==='buy'?'p-positive':'p-negative'">
