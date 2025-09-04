@@ -1,13 +1,14 @@
 @use 'variables' as v;
+@use 'sass:map';
 
 @mixin font($size: base, $weight: normal) {
   font-family: v.$font-family-base;
-  font-size: map-get(v.$font-sizes, $size);
+  font-size: map.get(v.$font-sizes, $size);
   font-weight: $weight;
 }
 
 @mixin spacing($property, $size) {
-  #{$property}: map-get(v.$spaces, $size);
+  #{$property}: map.get(v.$spaces, $size);
 }
 
 @mixin icon {
