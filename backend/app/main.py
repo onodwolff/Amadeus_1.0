@@ -23,4 +23,8 @@ app.include_router(ws.router)  # /ws
 
 @app.get("/")
 def root():
-    return {"ok": True, "service": "amadeus-mvp"}
+    return {
+        "ok": True,
+        "service": "amadeus-mvp",
+        "name": "Amadeus Multi-Exchange MVP",
+    }
