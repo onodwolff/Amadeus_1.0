@@ -1,5 +1,4 @@
 export const environment = {
-
-  apiBaseUrl: 'http://127.0.0.1:8100'
-
+  apiBaseUrl: 'http://127.0.0.1:8100',
+  token: ''
 };
