@@ -29,7 +29,24 @@ class SampleEMAStrategy(StrategyPlugin):
         self.last_slow = self._ema(closes, self.cfg["slow"])
 
     async def on_stop(self) -> None:
-        pass
+        cancel_all = getattr(self.ctx.trader, "cancel_all_orders", None)
+        if callable(cancel_all):
+            try:
+                await cancel_all(self.cfg["symbol"])
+            except TypeError:
+                await cancel_all()
+        self.position = 0.0
+        self.last_fast = None
+        self.last_slow = None
+        logger = getattr(self.ctx, "logger", None)
+        if logger:
+            try:
+                logger({"type": "diag", "text": "Strategy sample_ema stopped"})
+            except Exception:
+                try:
+                    logger.info("Strategy sample_ema stopped")
+                except Exception:
+                    pass
 
     async def on_tick(self) -> None:
         # Pull last few candles to update EMAs quickly
