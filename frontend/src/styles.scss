@@ -1,7 +1,7 @@
 @use 'styles/themes/_tokens';
 
-/* PrimeNG base + PrimeIcons */
-@import 'primeng/resources/primeng.min.css';
+/* PrimeNG: БЕЗ ресурса primeng/resources/primeng.min.css */
+/* Icons */
 @import 'primeicons/primeicons.css';
 
 /* AG Grid themes */
@@ -9,25 +9,22 @@
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
 @import 'ag-grid-community/styles/ag-theme-alpine-dark.css';
 
+/* Глобальные базовые стили */
 html, body {
   height: 100%;
   background: var(--bg-0);
   color: var(--text-0);
   font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
 }
-
 a, .link { color: var(--accent); }
-
 .card {
   background: var(--surface);
   border-radius: var(--card-radius);
   box-shadow: var(--shadow);
 }
-
 .flash-up   { animation: flashUp .35s; }
 .flash-down { animation: flashDown .35s; }
 @keyframes flashUp   { from { background:#12291b; } to { background:transparent; } }
 @keyframes flashDown { from { background:#2b1313; } to { background:transparent; } }
-
 .sidebar { background: var(--surface); border-right: 1px solid var(--gridline); }
 .topbar  { background: var(--bg-1);   border-bottom: 1px solid var(--gridline); }

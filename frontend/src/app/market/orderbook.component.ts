@@ -21,7 +21,7 @@ export class OrderbookComponent implements OnInit {
   @ViewChild(AgGridAngular) grid!: AgGridAngular;
   private api!: GridApi;
 
-  updates$ = new Subject<any>(); // шлём сюда объекты строк: { side, price, size, total, maxSize }
+  updates$ = new Subject<any>(); // сюда шлём апдейты строк: { side, price, size, total, maxSize }
 
   gridOptions: GridOptions = {
     columnDefs: [
