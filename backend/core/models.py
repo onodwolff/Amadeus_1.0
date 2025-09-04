@@ -43,3 +43,11 @@ class BalanceRow(SQLModel, table=True):
     locked: float = 0.0
     exchange: str = "mock"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class CredentialRow(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    exchange: str
+    category: str = "spot"
+    api_key_enc: str
+    api_secret_enc: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)

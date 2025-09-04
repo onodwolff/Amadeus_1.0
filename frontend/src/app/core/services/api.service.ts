@@ -37,44 +37,38 @@ export class ApiService {
   }
 
   // Risk API
-  async getRiskLimits() {
-    const r = await fetch(`${this.base}/risk/limits`, { headers: this.headers() });
-    return await r.json();
-    }
+  async getRiskLimits() { const r = await fetch(`${this.base}/risk/limits`, { headers: this.headers() }); return await r.json(); }
   async setRiskLimits(body: any) {
-    const r = await fetch(`${this.base}/risk/limits`, {
-      method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body)
-    });
+    const r = await fetch(`${this.base}/risk/limits`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body) });
     return await r.json();
   }
-  async getRiskState() {
-    const r = await fetch(`${this.base}/risk/state`, { headers: this.headers() });
-    return await r.json();
-  }
+  async getRiskState() { const r = await fetch(`${this.base}/risk/state`, { headers: this.headers() }); return await r.json(); }
 
   // Portfolio/Orders
-  async getBalances() {
-    const r = await fetch(`${this.base}/portfolio/balances`, { headers: this.headers() });
-    return await r.json();
-  }
-  async getPositions() {
-    const r = await fetch(`${this.base}/portfolio/positions`, { headers: this.headers() });
-    return await r.json();
-  }
-  async getOrders(limit=100) {
-    const r = await fetch(`${this.base}/orders?limit=${limit}`, { headers: this.headers() });
-    return await r.json();
-  }
-  async getFills(limit=200) {
-    const r = await fetch(`${this.base}/orders/fills?limit=${limit}`, { headers: this.headers() });
-    return await r.json();
-  }
+  async getBalances() { const r = await fetch(`${this.base}/portfolio/balances`, { headers: this.headers() }); return await r.json(); }
+  async getPositions() { const r = await fetch(`${this.base}/portfolio/positions`, { headers: this.headers() }); return await r.json(); }
+  async getOrders(limit=100) { const r = await fetch(`${this.base}/orders?limit=${limit}`, { headers: this.headers() }); return await r.json(); }
+  async getFills(limit=200) { const r = await fetch(`${this.base}/orders/fills?limit=${limit}`, { headers: this.headers() }); return await r.json(); }
 
   // Backtest
   async runBacktest(cfg: any) {
-    const r = await fetch(`${this.base}/backtest/run`, {
-      method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(cfg)
-    });
+    const r = await fetch(`${this.base}/backtest/run`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(cfg) });
+    return await r.json();
+  }
+
+  // Keys
+  async saveKeys(body: any) {
+    const r = await fetch(`${this.base}/keys`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body) });
+    return await r.json();
+  }
+  async getKeys(exchange: string, category: string) {
+    const r = await fetch(`${this.base}/keys?exchange=${exchange}&category=${category}`, { headers: this.headers() });
+    return await r.json();
+  }
+
+  // Dashboard
+  async getDashboardSummary() {
+    const r = await fetch(`${this.base}/dashboard/summary`, { headers: this.headers() });
     return await r.json();
   }
 }

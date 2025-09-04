@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import market, strategies, risk, portfolio, orders
+from .routers import market, strategies, risk, portfolio, orders, backtest, keys, dashboard
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from backend.core.db import create_db_and_tables
+from backend.workers.manager import MANAGER
 
 app = FastAPI(title="Amadeus API")
 
@@ -11,8 +12,20 @@ REQS = Counter("amadeus_requests_total", "Total HTTP requests", ["route","method
 LAT = Histogram("amadeus_request_latency_seconds", "Request latency", ["route","method"])
 
 @app.on_event("startup")
-def _startup():
+async def _startup():
     create_db_and_tables()
+    # try to start user-data workers (if keys exist they'll connect)
+    try:
+        await MANAGER.start()
+    except Exception:
+        pass
+
+@app.on_event("shutdown")
+async def _shutdown():
+    try:
+        await MANAGER.stop()
+    except Exception:
+        pass
 
 @app.middleware("http")
 async def metrics_mw(request, call_next):
@@ -38,6 +51,9 @@ app.include_router(strategies.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
 app.include_router(portfolio.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
+app.include_router(backtest.router, prefix="/api")
+app.include_router(keys.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
 
 @app.get("/healthz")
 def healthz(): return {"ok": True}

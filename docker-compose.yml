@@ -21,6 +21,7 @@ services:
       DB_USER: amadeus
       DB_PASSWORD: amadeus
       DB_NAME: amadeus
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
     ports: [ "8000:8000" ]
     depends_on: [ redis, postgres ]
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload

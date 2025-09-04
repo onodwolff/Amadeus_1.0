@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { JsonSchemaFormComponent } from '../../shared/ui/json-schema-form.component';
 
 @Component({
   standalone: true,
   selector: 'app-strategies',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, JsonSchemaFormComponent],
   template: `
   <div class="p-4">
     <h2 class="text-xl font-semibold mb-4">Strategies</h2>
@@ -17,6 +18,7 @@ import { ApiService } from '../../core/services/api.service';
         <select class="border rounded p-2" [(ngModel)]="cfg.exchange">
           <option value="mock">mock</option>
           <option value="bybit">bybit</option>
+          <option value="binance">binance</option>
         </select>
       </div>
       <div>
@@ -24,40 +26,36 @@ import { ApiService } from '../../core/services/api.service';
         <select class="border rounded p-2" [(ngModel)]="cfg.category">
           <option value="spot">spot</option>
           <option value="linear">linear</option>
+          <option value="usdt">usdt</option>
         </select>
       </div>
-      <div>
-        <label class="block text-sm mb-1">Symbol</label>
-        <input class="border rounded p-2 w-full" [(ngModel)]="cfg.symbol">
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Short</label>
-        <input type="number" class="border rounded p-2 w-full" [(ngModel)]="cfg.short">
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Long</label>
-        <input type="number" class="border rounded p-2 w-full" [(ngModel)]="cfg.long">
+      <div class="col-span-3">
+        <label class="block text-sm mb-1">Strategy</label>
+        <select class="border rounded p-2 w-full" [(ngModel)]="selected">
+          @for (s of strategies(); track s.id) { <option [ngValue]="s.id">{{ s.id }}</option> }
+        </select>
       </div>
     </div>
 
-    <div class="grid grid-cols-5 gap-3 mb-4 items-end">
+    <div class="grid grid-cols-2 gap-6 mb-4">
       <div>
-        <label class="block text-sm mb-1">Qty</label>
-        <input type="number" class="border rounded p-2 w-full" [(ngModel)]="cfg.qty" step="0.001">
+        <h3 class="font-medium mb-2">Config</h3>
+        <app-json-schema-form [schema]="schema()" [model]="cfg" (modelChange)="onCfg($event)"></app-json-schema-form>
       </div>
-      <div class="col-span-4">
-        <button class="px-3 py-2 rounded bg-black text-white" (click)="start()">Start (Paper)</button>
+      <div>
+        <h3 class="font-medium mb-2">Actions</h3>
+        <button class="px-3 py-2 rounded bg-black text-white" (click)="start()">Start</button>
         <button class="px-3 py-2 rounded border ml-2" (click)="stop()">Stop</button>
-      </div>
-    </div>
 
-    <div class="mt-6">
-      <h3 class="font-medium mb-2">Available</h3>
-      <ul class="list-disc pl-5">
-        @for (s of strategies(); track s.id) {
-          <li>{{ s.id }} — {{ s.running ? 'running' : 'stopped' }}</li>
-        }
-      </ul>
+        <div class="mt-6">
+          <h3 class="font-medium mb-2">Available</h3>
+          <ul class="list-disc pl-5">
+            @for (s of strategies(); track s.id) {
+              <li>{{ s.id }} — {{ s.running ? 'running' : 'stopped' }}</li>
+            }
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
   `
@@ -65,17 +63,21 @@ import { ApiService } from '../../core/services/api.service';
 export class StrategiesComponent {
   api = inject(ApiService);
   strategies = signal<{id:string; running:boolean}[]>([]);
+  selected = 'sample_ema_crossover';
+  schema = signal<any>({ type:'object', properties:{} });
   cfg: any = { exchange:'mock', category:'spot', symbol: 'BTCUSDT', short: 12, long: 26, qty: 0.01 };
 
   async ngOnInit() {
     this.strategies.set(await this.api.listStrategies());
+    this.schema.set(await this.api.getSchema(this.selected));
   }
+  async onCfg(_: any) { /* two-way via ngModel */ }
   async start() {
-    await this.api.startStrategy('sample_ema_crossover', this.cfg);
+    await this.api.startStrategy(this.selected, this.cfg);
     this.strategies.set(await this.api.listStrategies());
   }
   async stop() {
-    await this.api.stopStrategy('sample_ema_crossover');
+    await this.api.stopStrategy(this.selected);
     this.strategies.set(await this.api.listStrategies());
   }
 }
