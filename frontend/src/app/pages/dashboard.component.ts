@@ -1,26 +1,22 @@
 import { Component, signal } from '@angular/core';
-import { ApiService } from '../services/api.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
-  selector: 'app-dashboard',
+  selector: 'page-dashboard',
+  imports: [CommonModule],
   template: `
-  <h2>Dashboard</h2>
-  <div>Status: {{status()?.started ? 'RUNNING' : 'STOPPED'}}</div>
-  <div>Mode: {{status()?.mode}}</div>
-  <div>Exchange: {{status()?.exchange}}</div>
-  <div>Strategy: {{status()?.strategy || '-'}}</div>
-  <button (click)="refresh()">Refresh</button>
+  <div class="grid gap-4 lg:grid-cols-4">
+    <div class="card p-4"><div class="text-xs text-[#9aa4ad]">Equity</div><div class="text-2xl font-semibold">$ {{ equity() | number:'1.0-0' }}</div></div>
+    <div class="card p-4"><div class="text-xs text-[#9aa4ad]">PNL (today)</div><div class="text-2xl" [class.price-up]="pnl()>0" [class.price-down]="pnl()<0">{{ pnl() | number:'1.2-2' }}</div></div>
+    <div class="card p-4"><div class="text-xs text-[#9aa4ad]">Strategies</div><div class="text-2xl">{{ strategies() }}</div></div>
+    <div class="card p-4"><div class="text-xs text-[#9aa4ad]">Open orders</div><div class="text-2xl">{{ orders() }}</div></div>
+  </div>
   `
 })
-export class DashboardComponent {
-  status = signal<any>({});
-
-  constructor(private api: ApiService) {
-    this.refresh();
-  }
-
-  refresh() {
-    this.api.status().subscribe(res => this.status.set(res));
-  }
+export class DashboardPageComponent {
+  equity = signal(125000);
+  pnl = signal(1432.12);
+  strategies = signal(3);
+  orders = signal(12);
 }

@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, interval, takeUntil } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class WsService {
   private socket?: WebSocket;
+  private stop$ = new Subject<void>();
 
   // Parsed JSON messages
   public readonly messages$ = new Subject<any>();
@@ -25,7 +26,24 @@ export class WsService {
     return base;
   }
 
-  connect(path: string = ''): WebSocket {
+  connect(path: string = ''): WebSocket | undefined {
+    this.stop$.next();
+
+    // DEMO mode: synthesize a feed
+    if ((environment as any).demo) {
+      // fake open
+      queueMicrotask(() => this.stream$.next(new Event('open')));
+      let last = 50000;
+      interval(800).pipe(takeUntil(this.stop$)).subscribe(() => {
+        const chg = (Math.random() - 0.5) * 20;
+        last = Math.max(100, last + chg);
+        const msg = { type:'trade', symbol:'BTCUSDT', ts: Date.now(), side: chg >= 0 ? 'buy' : 'sell', price: +last.toFixed(2), qty: +(Math.random()*0.5+0.01).toFixed(3) };
+        this.messages$.next(msg);
+      });
+      return undefined;
+    }
+
+    // REAL WS
     const base = this.buildBase();
     const adj = path ? (path.startsWith('/') ? path : '/' + path) : '';
     const url = base + adj;
@@ -54,12 +72,14 @@ export class WsService {
   }
 
   send(obj: any) {
+    if ((environment as any).demo) return; // no-op in demo
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(typeof obj === 'string' ? obj : JSON.stringify(obj));
     }
   }
 
   close() {
+    this.stop$.next();
     if (this.socket) {
       try { this.socket.close(); } finally { this.socket = undefined; }
     }

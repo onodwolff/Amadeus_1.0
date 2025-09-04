@@ -1,16 +1,37 @@
-@tailwind base; @tailwind components; @tailwind utilities;
-:root { color-scheme: dark; } html, body { height: 100%; background:#0b0e11; color:#e6e8eb; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* dark base */
+:root { color-scheme: dark; }
+html, body { height: 100%; background: #0b0e11; color: #e6e8eb; }
 * { scrollbar-width: thin; scrollbar-color: #2a3138 transparent; }
-::-webkit-scrollbar { height:8px; width:8px; } ::-webkit-scrollbar-thumb { background:#2a3138; border-radius:8px; }
-.card { @apply bg-bg-card rounded-2xl shadow-soft border border-[#232a32]; }
-.card-header { @apply px-4 py-3 border-b border-[#232a32] text-sm text-text-muted; }
+::-webkit-scrollbar { height: 8px; width: 8px; }
+::-webkit-scrollbar-thumb { background: #2a3138; border-radius: 8px; }
+
+.card { @apply bg-[#111418] rounded-2xl shadow-[0_6px_24px_rgba(0,0,0,0.25)] border border-[#232a32]; }
+.card-header { @apply px-4 py-3 border-b border-[#232a32] text-sm text-[#9aa4ad]; }
 .card-body { @apply p-4; }
-.kpi { @apply card p-4 flex flex-col gap-1; } .kpi .value { @apply text-2xl font-semibold; }
-.kpi .delta.up { color:#22c55e; } .kpi .delta.down { color:#ef4444; }
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-[#1a1f25] hover:bg-bg-hover text-sm; }
-.btn.primary { @apply bg-brand-blue text-white hover:brightness-110; }
-.tab { @apply px-3 py-2 rounded-xl cursor-pointer; } .tab.active { @apply bg-[#1a1f25]; }
-.badge { @apply text-xs rounded-lg px-2 py-1 bg-[#1a1f25] text-text-muted; }
-.badge.ok { background:#052e1b; color:#22c55e; } .badge.err { background:#3a1111; color:#ef4444; }
-.table { @apply w-full text-sm; } .table th { @apply text-left text-text-muted font-normal pb-2; } .table td { @apply py-2 border-t border-[#1b2026]; }
-.price-up { color:#22c55e; } .price-down { color:#ef4444; }
+
+/* skeletons */
+.skel { @apply relative overflow-hidden rounded-lg bg-[#141820]; }
+.skel::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+  transform: translateX(-100%); animation: skel 1.2s infinite;
+}
+@keyframes skel { to { transform: translateX(100%); } }
+
+.skel-line { @apply skel h-4; }
+.skel-rect { @apply skel; }
+
+/* badges / statuses */
+.badge { @apply text-xs rounded-lg px-2 py-1 bg-[#1a1f25] text-[#9aa4ad]; }
+.badge.ok { background:#052e1b; color:#22c55e; }
+.badge.err { background:#3a1111; color:#ef4444; }
+
+.btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-[#1a1f25] hover:bg-[#151a20] text-sm; }
+.btn.primary { @apply bg-[#60a5fa] text-white hover:brightness-110; }
+
+.price-up { color:#22c55e; }
+.price-down { color:#ef4444; }
