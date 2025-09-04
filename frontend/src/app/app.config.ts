@@ -10,7 +10,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes),
     provideAnimationsAsync(),
-    // Тема теперь через CSS (styles.scss), поэтому без preset
     providePrimeNG(),
     MessageService
   ]
