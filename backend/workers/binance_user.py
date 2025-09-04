@@ -2,13 +2,17 @@ import asyncio, time, json
 from typing import Optional
 import httpx, websockets
 from sqlmodel import Session
-from backend.core.db import get_session, engine
+from backend.core.db import engine
 from backend.core.keys import get_keys
-from backend.core.models import FillRow, OrderRow
+from backend.core.models import FillRow
 from backend.core.events import publish_fill
+from backend.core.pnl import apply_fill
 
 BINANCE_FUT = "https://fapi.binance.com"
 WS_BASE = "wss://fstream.binance.com/ws"
+
+async def _sleep_backoff(n: int):
+    await asyncio.sleep(min(60, (2 ** min(n, 6)) + (0.1 * n)))
 
 class BinanceUserDataWorker:
     def __init__(self, category: str = "usdt"):
@@ -34,6 +38,7 @@ class BinanceUserDataWorker:
             return r.json()["listenKey"]
 
     async def _keepalive(self, session: Session):
+        # Valid 60 minutes -> refresh every ~30m
         while self._running and self._listen_key:
             try:
                 headers = await self._get_headers(session)
@@ -41,7 +46,7 @@ class BinanceUserDataWorker:
                     await client.put("/fapi/v1/listenKey", params={"listenKey": self._listen_key})
             except Exception:
                 pass
-            await asyncio.sleep(30*60)  # 30 minutes
+            await asyncio.sleep(30*60)
 
     async def _ws_loop(self):
         with Session(engine) as db:
@@ -54,18 +59,18 @@ class BinanceUserDataWorker:
                 raw = await ws.recv()
                 msg = json.loads(raw)
                 if msg.get("e") == "ORDER_TRADE_UPDATE":
-                    o = msg["o"]
+                    o = msg.get("o", {})
                     if o.get("X") in ("FILLED","PARTIALLY_FILLED") and float(o.get("l",0))>0:
-                        # persist fill
                         with Session(engine) as db:
                             fr = FillRow(
-                                order_id=o.get("i"), symbol=o.get("s"), price=float(o.get("L",0)),
+                                order_id=str(o.get("i")), symbol=o.get("s"), price=float(o.get("L",0)),
                                 qty=float(o.get("l",0)), side=("buy" if o.get("S")=="BUY" else "sell"),
                                 exchange="binance", category="usdt", ts=int(msg.get("E", time.time()*1000)), meta=o
                             )
                             db.add(fr); db.commit()
+                            apply_fill(db, fr); db.commit()
                         await publish_fill({
-                            "order_id": o.get("i"), "symbol": o.get("s"), "price": float(o.get("L",0)),
+                            "order_id": str(o.get("i")), "symbol": o.get("s"), "price": float(o.get("L",0)),
                             "qty": float(o.get("l",0)), "side": "buy" if o.get("S")=="BUY" else "sell",
                             "exchange": "binance", "category": "usdt", "ts": int(msg.get("E", time.time()*1000))
                         })
@@ -75,13 +80,14 @@ class BinanceUserDataWorker:
             return
         self._running = True
         async def runner():
-            with Session(engine) as db:
-                asyncio.create_task(self._keepalive(db))
+            n = 0
             while self._running:
                 try:
                     await self._ws_loop()
+                    n = 0
                 except Exception:
-                    await asyncio.sleep(5)
+                    n += 1
+                    await _sleep_backoff(n)
         self._task = asyncio.create_task(runner())
 
     async def stop(self):

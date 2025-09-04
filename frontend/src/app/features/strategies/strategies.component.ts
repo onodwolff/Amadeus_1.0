@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { JsonSchemaFormComponent } from '../../shared/ui/json-schema-form.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   standalone: true,
@@ -44,8 +45,9 @@ import { JsonSchemaFormComponent } from '../../shared/ui/json-schema-form.compon
       </div>
       <div>
         <h3 class="font-medium mb-2">Actions</h3>
-        <button class="px-3 py-2 rounded bg-black text-white" (click)="start()">Start</button>
-        <button class="px-3 py-2 rounded border ml-2" (click)="stop()">Stop</button>
+        <div class="text-sm text-gray-500 mb-2">Role: {{ auth.role() }}</div>
+        <button class="px-3 py-2 rounded bg-black text-white" (click)="start()" [disabled]="auth.role()==='viewer'">Start</button>
+        <button class="px-3 py-2 rounded border ml-2" (click)="stop()" [disabled]="auth.role()==='viewer'">Stop</button>
 
         <div class="mt-6">
           <h3 class="font-medium mb-2">Available</h3>
@@ -62,12 +64,14 @@ import { JsonSchemaFormComponent } from '../../shared/ui/json-schema-form.compon
 })
 export class StrategiesComponent {
   api = inject(ApiService);
+  auth = inject(AuthService);
   strategies = signal<{id:string; running:boolean}[]>([]);
   selected = 'sample_ema_crossover';
   schema = signal<any>({ type:'object', properties:{} });
   cfg: any = { exchange:'mock', category:'spot', symbol: 'BTCUSDT', short: 12, long: 26, qty: 0.01 };
 
   async ngOnInit() {
+    await this.auth.whoami();
     this.strategies.set(await this.api.listStrategies());
     this.schema.set(await this.api.getSchema(this.selected));
   }

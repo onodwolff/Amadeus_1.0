@@ -13,6 +13,7 @@ class OrderRow(SQLModel, table=True):
     status: str = "new"
     exchange: str = "mock"
     category: str = "spot"
+    strategy_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FillRow(SQLModel, table=True):
@@ -24,6 +25,7 @@ class FillRow(SQLModel, table=True):
     side: str
     exchange: str = "mock"
     category: str = "spot"
+    strategy_id: Optional[str] = None
     ts: int  # ms timestamp
     meta: dict = Field(sa_column=Column(JSON), default_factory=dict)
 
@@ -34,6 +36,7 @@ class PositionRow(SQLModel, table=True):
     avg_price: float = 0.0
     exchange: str = "mock"
     category: str = "spot"
+    strategy_id: Optional[str] = None
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class BalanceRow(SQLModel, table=True):
@@ -60,3 +63,23 @@ class AuditLog(SQLModel, table=True):
     actor: str  # hashed token id
     status: int
     extra: dict = Field(sa_column=Column(JSON), default_factory=dict)
+
+class RealizedPnlRow(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    symbol: str
+    exchange: str
+    category: str
+    strategy_id: Optional[str] = None
+    ts: int
+    qty: float
+    price: float
+    pnl: float  # realized PnL for this fill closing part of position
+
+class EquitySnapshotRow(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ts: int
+    equity: float
+    symbol: Optional[str] = None
+    exchange: Optional[str] = None
+    category: Optional[str] = None
+    strategy_id: Optional[str] = None

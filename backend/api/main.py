@@ -1,14 +1,16 @@
-from fastapi import FastAPI, Response, Request
+from fastapi import FastAPI, Response, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import market, strategies, risk, portfolio, orders, backtest, keys, dashboard, analytics, auth
+from .routers import market, strategies, risk, portfolio, orders, backtest, keys, dashboard, analytics, auth, audit
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-from backend.core.db import create_db_and_tables
+from backend.core.db import create_db_and_tables, get_session
 from backend.workers.manager import MANAGER
 from backend.core.models import AuditLog
-from backend.core.db import get_session
 from backend.api.deps import require_token, Principal
+from backend.observability.otel import setup_otel
+from sqlmodel import Session
 
 app = FastAPI(title="Amadeus API")
+setup_otel(app)
 
 # Prometheus metrics
 REQS = Counter("amadeus_requests_total", "Total HTTP requests", ["route","method"])
@@ -35,7 +37,6 @@ async def metrics_audit_mw(request: Request, call_next):
     method = request.method
     principal: Principal | None = None
     try:
-        # try resolve principal (best-effort)
         auth_header = request.headers.get("authorization","")
         from .deps import require_token as _rt, Principal as _P
         try:
@@ -47,10 +48,8 @@ async def metrics_audit_mw(request: Request, call_next):
     with LAT.labels(route, method).time():
         response = await call_next(request)
     REQS.labels(route, method).inc()
-    # audit
     try:
-        from sqlmodel import Session
-        with Session(get_session.__self__.engine) if hasattr(get_session, "__self__") else next(get_session()) as s:
+        with Session(next(get_session())) as s:
             s.add(AuditLog(route=route, method=method, actor=(principal.sub if principal else "anon"), status=response.status_code, extra={"ip": request.client.host if request.client else ""}))
             s.commit()
     except Exception:
@@ -67,7 +66,7 @@ app.add_middleware(
     allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api")  # rbac test routes
+app.include_router(auth.router, prefix="/api")
 app.include_router(market.router, prefix="/api")
 app.include_router(strategies.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
@@ -77,6 +76,7 @@ app.include_router(backtest.router, prefix="/api")
 app.include_router(keys.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
 
 @app.get("/healthz")
 def healthz(): return {"ok": True}
