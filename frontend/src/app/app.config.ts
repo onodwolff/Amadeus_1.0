@@ -5,13 +5,18 @@ import { appRoutes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
+import Aura from '@primeng/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes),
     provideAnimationsAsync(),
-    // Тема теперь через CSS (styles.scss), поэтому без preset
-    providePrimeNG(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: { darkModeSelector: '.app-dark' }
+      }
+    }),
     MessageService
   ]
 };
