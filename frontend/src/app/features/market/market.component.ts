@@ -1,15 +1,38 @@
 import { Component, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { WsService } from '../../core/services/ws.service';
 import { MarketStore } from '../../core/state/market.store';
 
 @Component({
   standalone: true,
   selector: 'app-market',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
   <div class="p-4 grid gap-4">
-    <h2 class="text-xl font-semibold">Market — {{symbol()}}</h2>
+    <div class="flex gap-3 items-end">
+      <div>
+        <label class="block text-sm mb-1">Exchange</label>
+        <select class="border rounded p-2" [(ngModel)]="exchange">
+          <option value="mock">mock</option>
+          <option value="bybit">bybit</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Category</label>
+        <select class="border rounded p-2" [(ngModel)]="category">
+          <option value="spot">spot</option>
+          <option value="linear">linear</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Symbol</label>
+        <input class="border rounded p-2" [(ngModel)]="symbol">
+      </div>
+      <button class="px-3 py-2 rounded bg-black text-white" (click)="reconnect()">Connect</button>
+    </div>
+
+    <h2 class="text-xl font-semibold">Market — {{symbol}}</h2>
 
     <div class="grid md:grid-cols-2 gap-4">
       <div>
@@ -54,22 +77,26 @@ import { MarketStore } from '../../core/state/market.store';
 export class MarketComponent {
   ws = inject(WsService);
   store = inject(MarketStore);
-  symbol = this.store.symbol;
+  symbol = 'BTCUSDT';
+  exchange = 'mock';
+  category = 'spot';
+
   book = this.store.book;
   trades = this.store.trades;
 
-  constructor() {
-    effect(() => {
-      const s = this.symbol();
-      const base = (window as any).__WS__ || 'ws://localhost:8000/api/market/ws';
-      // subscribe to book
-      this.ws.subscribe(`${base}/book?symbol=${encodeURIComponent(s)}`, (m) => {
-        if (m?.type === 'book') this.store.pushBook(m);
-      });
-      // subscribe to trades
-      this.ws.subscribe(`${base}/trades?symbol=${encodeURIComponent(s)}`, (m) => {
-        if (m?.type === 'trade') this.store.pushTrade(m);
-      });
+  reconnect() {
+    const base = (window as any).__WS__ || 'ws://localhost:8000/api/market/ws';
+    // subscribe to book
+    this.ws.subscribe(`${base}/book?exchange=${this.exchange}&category=${this.category}&symbol=${encodeURIComponent(this.symbol)}`, (m) => {
+      if (m?.type === 'book') this.store.pushBook(m);
     });
+    // subscribe to trades
+    this.ws.subscribe(`${base}/trades?exchange=${this.exchange}&category=${this.category}&symbol=${encodeURIComponent(this.symbol)}`, (m) => {
+      if (m?.type === 'trade') this.store.pushTrade(m);
+    });
+  }
+
+  constructor() {
+    this.reconnect();
   }
 }
