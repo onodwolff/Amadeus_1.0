@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard.component';
-import { MarketViewComponent } from './pages/market.component';
-import { StrategiesComponent } from './pages/strategies.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MarketComponent } from './features/market/market.component';
+import { StrategiesComponent } from './features/strategies/strategies.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
-  { path: 'market', component: MarketViewComponent },
+  { path: 'market', component: MarketComponent },
   { path: 'strategies', component: StrategiesComponent },
 ];
