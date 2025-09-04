@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLinkActive } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive],
   template: `
   <div class="min-h-screen grid grid-cols-[240px_1fr]">
     <aside class="bg-[#0d1116] border-r border-[#1b2026] p-3">
