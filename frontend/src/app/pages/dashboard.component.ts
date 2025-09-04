@@ -1,4 +1,5 @@
-import { Component, signal, effect } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { ApiService } from '../services/api.service';
 
 @Component({
   standalone: true,
@@ -14,9 +15,12 @@ import { Component, signal, effect } from '@angular/core';
 })
 export class DashboardComponent {
   status = signal<any>({});
-  async ngOnInit(){ await this.refresh(); }
-  async refresh(){
-    const res = await fetch('http://localhost:8100/api/status');
-    this.status.set(await res.json());
+
+  constructor(private api: ApiService) {
+    this.refresh();
+  }
+
+  refresh() {
+    this.api.status().subscribe(res => this.status.set(res));
   }
 }
