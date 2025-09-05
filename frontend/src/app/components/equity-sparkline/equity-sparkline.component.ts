@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WsService } from '../../services/ws.service';
+import { WsService } from '../../core/services/ws.service';
 
 // используем any для совместимости с разными версиями lightweight-charts (v4/v5)
 import { createChart, ColorType } from 'lightweight-charts';

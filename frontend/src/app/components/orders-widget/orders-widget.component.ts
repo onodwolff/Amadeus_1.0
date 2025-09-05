@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
-import { WsService } from '../../services/ws.service';
+import { WsService } from '../../core/services/ws.service';
 
 interface LiveOrder {
     id: string;

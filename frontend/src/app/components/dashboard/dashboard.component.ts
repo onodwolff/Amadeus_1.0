@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
 import { ApiService } from '../../core/services/api.service';
 import { BotStatus } from '../../models';
-import { WsService } from '../../services/ws.service';
+import { WsService } from '../../core/services/ws.service';
 import { Subscription } from 'rxjs';
 import { EquitySparklineComponent } from '../equity-sparkline/equity-sparkline.component'; // ⬅️ импорт спарклайна
 import { MatSnackBar } from '@angular/material/snack-bar';
