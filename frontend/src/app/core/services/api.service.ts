@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { RiskStatus } from '../../models';
+import { RiskStatus, HistoryResponse, OrderHistoryItem, TradeHistoryItem } from '../../models';
 
 export interface Candle { ts:number; o:number; h:number; l:number; c:number; v:number; tf:string; symbol:string; }
 
@@ -56,8 +56,19 @@ export class ApiService {
   restoreConfig()     { return this.post('/config/restore', {}); }
 
   scan(body: any)     { return this.post('/scan', body); }
+  historyOrders(limit = 20, offset = 0) {
+    const url = this.url(`/history/orders?limit=${limit}&offset=${offset}`);
+    return firstValueFrom(
+      this.http.get<HistoryResponse<OrderHistoryItem>>(url, { headers: this.headers() }),
+    );
+  }
 
-  // history and risk endpoints are disabled until backend support
+  historyTrades(limit = 20, offset = 0) {
+    const url = this.url(`/history/trades?limit=${limit}&offset=${offset}`);
+    return firstValueFrom(
+      this.http.get<HistoryResponse<TradeHistoryItem>>(url, { headers: this.headers() }),
+    );
+  }
 
   // Methods returning Promises
   getOHLCV(symbol: string, tf = '1m', limit = 200, exchange='mock', category='spot'): Promise<Candle[]> {
