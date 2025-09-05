@@ -1,12 +1,14 @@
 import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AppMaterialModule } from '../../app.module';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
   standalone: true,
   selector: 'app-strategies-modern',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AppMaterialModule],
   template: `
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-semibold">Strategies</h2>
@@ -37,6 +39,7 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class StrategiesModernComponent implements OnInit {
   private api = inject(ApiService);
+  private snack = inject(MatSnackBar);
 
   @Output() create = new EventEmitter<void>();
   @Output() importCfg = new EventEmitter<void>();
@@ -49,8 +52,12 @@ export class StrategiesModernComponent implements OnInit {
   }
 
   async refresh() {
-    const list = await this.api.listStrategies();
-    this.items.set(list);
+    try {
+      const list = await this.api.listStrategies();
+      this.items.set(list);
+    } catch (err: any) {
+      this.snack.open(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
   }
 
   private setLoading(id: string, v: boolean) {
@@ -64,6 +71,8 @@ export class StrategiesModernComponent implements OnInit {
     try {
       await this.api.startStrategy(id, {});
       this.items.update(list => list.map(it => it.id === id ? { ...it, running: true } : it));
+    } catch (err: any) {
+      this.snack.open(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     } finally {
       this.setLoading(id, false);
     }
@@ -74,6 +83,8 @@ export class StrategiesModernComponent implements OnInit {
     try {
       await this.api.stopStrategy(id);
       this.items.update(list => list.map(it => it.id === id ? { ...it, running: false } : it));
+    } catch (err: any) {
+      this.snack.open(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     } finally {
       this.setLoading(id, false);
     }
