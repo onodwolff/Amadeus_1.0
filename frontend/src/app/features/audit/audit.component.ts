@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -28,15 +30,13 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class AuditComponent {
   auth = inject(AuthService);
+  api = inject(ApiService);
   logs = signal<any[]>([]);
-  base = (window as any).__API__ || 'http://localhost:8000/api';
-  token = (window as any).__TOKEN__ || '';
 
   async ngOnInit() {
     await this.auth.whoami();
     if (this.auth.role()!=='admin') return;
-    const headers = this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
-    const r = await fetch(`${this.base}/audit`, { headers });
-    this.logs.set(await r.json());
+    const j = await firstValueFrom(this.api.get('/audit'));
+    this.logs.set(j);
   }
 }

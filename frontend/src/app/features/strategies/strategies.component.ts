@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { JsonSchemaFormComponent } from '../../shared/json-schema-form.component';
+import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -63,14 +65,20 @@ export class StrategiesComponent {
   sid = 'sample_ema_crossover';
   cfg: any = {};
   schema = signal<any>({type:'object', properties:{}});
+  api = inject(ApiService);
 
   async ngOnInit() {
     await this.refresh();
   }
   async refresh() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    const a = await fetch(`${base}/strategies`).then(r=>r.json());
-    const d = await fetch(`${base}/dashboard/summary/strategies`).then(r=>r.json()).catch(()=>({items:[]}));
+    const a = await this.api.listStrategies();
+    let d: any;
+    try {
+      d = await firstValueFrom(this.api.get('/dashboard/summary/strategies'));
+    } catch {
+      d = { items: [] };
+    }
+    if (!Array.isArray(d.items)) d.items = [];
     const eqMap = new Map(d.items?.map((x:any)=>[x.strategy_id, x.equity]) || []);
     this.list.set(a.map((x:any)=>({ ...x, equity: eqMap.get(x.id) })));
     if (a.length && !a.find((x:any)=>x.id===this.sid)) {
@@ -79,12 +87,10 @@ export class StrategiesComponent {
     }
   }
   async loadSchema() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    this.schema.set(await fetch(`${base}/strategies/${this.sid}/schema`).then(r=>r.json()));
+    this.schema.set(await this.api.getSchema(this.sid));
   }
   async create() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    await fetch(`${base}/strategies/${this.sid}/start`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.cfg) });
+    await this.api.startStrategy(this.sid, this.cfg);
     this.openCreate = false;
     await this.refresh();
   }

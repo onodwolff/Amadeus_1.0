@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -38,19 +40,19 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class RiskComponent {
-  sid=''; pol:any={max_active_orders:100, max_dd:0.3, max_leverage:5.0, max_notional_per_symbol:{}, max_pos_qty_per_symbol:{}};
+  api = inject(ApiService);
+  sid='';
+  pol:any={max_active_orders:100, max_dd:0.3, max_leverage:5.0, max_notional_per_symbol:{}, max_pos_qty_per_symbol:{}};
   log = signal<any[]>([]);
   async load() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    const p = await fetch(`${base}/riskx/policies/${this.sid}`).then(r=>r.json());
+    const p = await firstValueFrom(this.api.get(`/riskx/policies/${this.sid}`));
     this.pol = Object.assign({max_active_orders:100, max_dd:0.3, max_leverage:5.0, max_notional_per_symbol:{}, max_pos_qty_per_symbol:{}}, p||{});
   }
   async save() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    await fetch(`${base}/riskx/policies/${this.sid}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.pol)});
+    await firstValueFrom(this.api.post(`/riskx/policies/${this.sid}`, this.pol));
   }
   async refreshLog() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    this.log.set(await fetch(`${base}/riskx/log`).then(r=>r.json()).then(j=>j.items));
+    const j: any = await firstValueFrom(this.api.get('/riskx/log'));
+    this.log.set(j.items);
   }
 }

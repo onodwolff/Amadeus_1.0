@@ -1,16 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  api = inject(ApiService);
   role = signal<'admin'|'trader'|'viewer'|'dev'>('dev');
-  base = (window as any).__API__ || 'http://localhost:8000/api';
-  token = (window as any).__TOKEN__ || '';
 
   async whoami() {
-    const headers = this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
     try {
-      const r = await fetch(`${this.base}/auth/whoami`, { headers });
-      const j = await r.json();
+      const j: any = await firstValueFrom(this.api.get('/auth/whoami'));
       if (j?.role) this.role.set(j.role);
     } catch {}
   }
