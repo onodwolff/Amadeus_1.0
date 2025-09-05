@@ -15,7 +15,7 @@ npm i primeng@16 primeicons@6
 npm i -D tailwindcss @tailwindcss/postcss postcss
 
 # Initialize Tailwind if not present
-if (-Not (Test-Path -Path .\tailwind.config.cjs)) {
+if (-Not (Test-Path -Path .\tailwind.config.js)) {
   npx tailwindcss init -p
 }
 

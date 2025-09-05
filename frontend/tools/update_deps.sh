@@ -15,7 +15,7 @@ npm i primeng@16 primeicons@6
 npm i -D tailwindcss @tailwindcss/postcss postcss
 
 # Initialize Tailwind if not present
-if [ ! -f tailwind.config.cjs ]; then
+if [ ! -f tailwind.config.js ]; then
   npx tailwindcss init -p
 fi
 
