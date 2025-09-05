@@ -79,6 +79,19 @@ export class RiskPage {
   });
   loadingLimits = true;
 
+  private handleError(action: string, err: any) {
+    const status = err?.status;
+    let msg = action;
+    if (status === 404) {
+      msg += ': not found (404)';
+    } else if (status === 500) {
+      msg += ': server error (500)';
+    } else if (err?.message) {
+      msg += ': ' + err.message;
+    }
+    alert(msg);
+  }
+
   ngOnInit() {
     this.refreshStatus();
     this.refreshLimits();
@@ -89,7 +102,7 @@ export class RiskPage {
     try {
       this.status = await this.api.getRiskStatus();
     } catch (err) {
-      console.error('Failed to load risk status', err);
+      this.handleError('Failed to load risk status', err);
     } finally {
       this.loadingStatus = false;
     }
@@ -101,7 +114,7 @@ export class RiskPage {
       const limits = await this.api.getRiskLimits();
       this.limitsForm.patchValue(limits || {});
     } catch (err) {
-      console.error('Failed to load risk limits', err);
+      this.handleError('Failed to load risk limits', err);
     } finally {
       this.loadingLimits = false;
     }
@@ -113,7 +126,7 @@ export class RiskPage {
       await this.api.setRiskLimits(this.limitsForm.value);
       await this.refreshLimits();
     } catch (err) {
-      console.error('Failed to save risk limits', err);
+      this.handleError('Failed to save risk limits', err);
     } finally {
       this.loadingLimits = false;
     }
@@ -124,7 +137,7 @@ export class RiskPage {
       await this.api.unlockRisk();
       await this.refreshStatus();
     } catch (err) {
-      console.error('Failed to unlock risk', err);
+      this.handleError('Failed to unlock risk', err);
     }
   }
 }
