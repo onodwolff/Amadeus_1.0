@@ -82,15 +82,18 @@ export class RiskPage {
   /** Display a user-friendly error based on HTTP status codes */
   private handleError(action: string, err: any) {
     const status = err?.status;
-    let msg = action;
-    if (status === 404) {
-      msg += ': not found (404)';
+    let message = action;
+    if (status === 0) {
+      // usually a network error
+      message += ': network error';
+    } else if (status === 404) {
+      message += ': not found (404)';
     } else if (status === 500) {
-      msg += ': server error (500)';
+      message += ': server error (500)';
     } else if (err?.message) {
-      msg += ': ' + err.message;
+      message += ': ' + err.message;
     }
-    alert(msg);
+    alert(message);
   }
 
   ngOnInit() {
