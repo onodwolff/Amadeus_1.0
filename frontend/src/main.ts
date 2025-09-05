@@ -1,8 +1,11 @@
 import 'zone.js';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppShellComponent } from './app/layout/app-shell.component';
 import { ThemeService } from './app/core/theme/theme.service';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 bootstrapApplication(AppShellComponent, appConfig).then(ref => {
   const theme = ref.injector.get(ThemeService);
