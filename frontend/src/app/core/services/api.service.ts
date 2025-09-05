@@ -56,13 +56,17 @@ export class ApiService {
   restoreConfig()     { return this.post('/config/restore', {}); }
 
   scan(body: any)     { return this.post('/scan', body); }
+  // history and risk endpoints are disabled until backend support
   historyOrders(limit = 20, offset = 0) {
     const url = this.url(`/history/orders?limit=${limit}&offset=${offset}`);
     return firstValueFrom(
       this.http.get<HistoryResponse<OrderHistoryItem>>(url, { headers: this.headers() }),
     );
   }
-
+  getDashboardSummary() {
+    const url = this.url('/dashboard/summary');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
   historyTrades(limit = 20, offset = 0) {
     const url = this.url(`/history/trades?limit=${limit}&offset=${offset}`);
     return firstValueFrom(
