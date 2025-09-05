@@ -6,22 +6,32 @@ import { environment } from '../../../environments/environment';
 export class WsService {
   private socket?: WebSocket;
   private stop$ = new Subject<void>();
+  private win: any = (globalThis as any);
+  private baseOverride?: string;
 
   public readonly messages$ = new Subject<any>();
   public readonly stream$ = new Subject<Event>();
 
-  private buildBase(): string {
+  private get baseUrl(): string {
+    if (this.baseOverride) return this.baseOverride;
+
     const envAny: any = environment as any;
     const apiConf = envAny.api;
     const httpBase: string =
+      this.win.__API__ ||
       (typeof apiConf === 'string' ? apiConf : apiConf?.baseUrl) ||
       'http://127.0.0.1:8100';
 
-    const base = envAny.ws
-      ? String(envAny.ws).replace(/\/$/, '')
+    const wsBase = this.win.__WS__ || envAny.ws;
+    const base = wsBase
+      ? String(wsBase).replace(/\/$/, '')
       : String(httpBase).replace(/^http/, 'ws').replace(/\/$/, '') + '/ws';
 
     return base;
+  }
+
+  setBaseUrl(url: string) {
+    this.baseOverride = url ? String(url).replace(/\/$/, '') : undefined;
   }
 
   connect(path: string = ''): WebSocket | undefined {
@@ -39,7 +49,7 @@ export class WsService {
       return undefined;
     }
 
-    const base = this.buildBase();
+    const base = this.baseUrl;
     const adj = path ? (path.startsWith('/') ? path : '/' + path) : '';
     const url = path && path.includes('://') ? path : base + adj;
 
