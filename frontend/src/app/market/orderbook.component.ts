@@ -50,11 +50,16 @@ export class OrderbookComponent implements OnInit {
     const colorKey = params?.data?.side === 'bid' ? '--buy' : '--sell';
     const base = getComputedStyle(document.documentElement)
       .getPropertyValue(colorKey).trim();
+    const hex = base.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const color = `rgba(${r}, ${g}, ${b}, 0.2)`;
     const el = document.createElement('div');
     el.style.position = 'relative';
     el.style.padding = '0 6px';
     el.textContent = String(size);
-    el.style.background = `linear-gradient(to right, ${base}33 ${width}%, transparent ${width}%)`;
+    el.style.background = `linear-gradient(to right, ${color} ${width}%, transparent ${width}%)`;
     return el;
   }
 }
