@@ -42,7 +42,7 @@ export class StrategiesModernComponent implements OnInit {
     await this.refresh();
   }
 
-  private async refresh() {
+  async refresh() {
     const list = await this.api.listStrategies();
     this.items.set(list);
   }
