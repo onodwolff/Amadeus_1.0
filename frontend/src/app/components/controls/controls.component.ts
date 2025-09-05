@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
-import { ApiService } from '../../services/api.service';
+import { ApiService } from '../../core/services/api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription, timer } from 'rxjs';
 

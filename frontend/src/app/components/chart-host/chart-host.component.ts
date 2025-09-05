@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api.service';
+import { ApiService } from '../../core/services/api.service';
 import { TvAdvancedComponent } from '../tv-advanced/tv-advanced.component';
 import { TvLightweightComponent } from '../tv-lightweight/tv-lightweight.component';
 
