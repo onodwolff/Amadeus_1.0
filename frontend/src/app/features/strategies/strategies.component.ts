@@ -39,7 +39,9 @@ import { JsonSchemaFormComponent } from '../../shared/json-schema-form.component
           <div>
             <label class="block text-sm mb-1">Strategy</label>
             <select class="border rounded p-2 w-full" [(ngModel)]="sid" (ngModelChange)="loadSchema()">
-              <option value="sample_ema_crossover">sample_ema_crossover</option>
+              @for (s of list(); track s.id) {
+                <option [value]="s.id">{{ s.id }}</option>
+              }
             </select>
           </div>
           <div class="col-span-2">
@@ -71,6 +73,10 @@ export class StrategiesComponent {
     const d = await fetch(`${base}/dashboard/summary/strategies`).then(r=>r.json()).catch(()=>({items:[]}));
     const eqMap = new Map(d.items?.map((x:any)=>[x.strategy_id, x.equity]) || []);
     this.list.set(a.map((x:any)=>({ ...x, equity: eqMap.get(x.id) })));
+    if (a.length && !a.find((x:any)=>x.id===this.sid)) {
+      this.sid = a[0].id;
+      await this.loadSchema();
+    }
   }
   async loadSchema() {
     const base = (window as any).__API__ || 'http://localhost:8000/api';

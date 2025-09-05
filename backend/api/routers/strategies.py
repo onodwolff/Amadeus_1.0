@@ -12,6 +12,8 @@ router = APIRouter(prefix="/strategies", tags=["strategies"])
 
 # NOTE: this is a minimal placeholder; wire it to your real strategy registry
 _registry = {"sample_ema_crossover": {"schema": {"type":"object","properties":{"symbol":{"type":"string","default":"BTCUSDT"},"short":{"type":"integer","default":12},"long":{"type":"integer","default":26},"qty":{"type":"number","default":0.01},"exchange":{"type":"string","default":"binance"},"category":{"type":"string","default":"usdt"}}}}}
+# backwards compatibility alias
+_registry["sample_ema"] = _registry["sample_ema_crossover"]
 _running: Dict[str, Any] = {}
 
 def _gen_cid(prefix: str) -> str:

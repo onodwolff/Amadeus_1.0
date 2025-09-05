@@ -6,22 +6,19 @@ import { ApiService } from '../core/services/api.service';
   selector: 'app-strategies',
   template: `
   <h2>Strategies</h2>
-  <button (click)="start()">Start sample_ema</button>
+  <button (click)="start()">Start sample_ema_crossover</button>
   <button (click)="stop()">Stop</button>
   `
 })
 export class StrategiesComponent {
   constructor(private api: ApiService) {}
 
-  start() {
-    const body = {
-      strategy: 'sample_ema',
-      config: { symbol: 'BTCUSDT', tf: '1m', fast: 9, slow: 21, qty: 0.001 }
-    };
-    this.api.start(body).subscribe();
+  async start() {
+    const cfg = { symbol: 'BTCUSDT', tf: '1m', fast: 9, slow: 21, qty: 0.001 };
+    await this.api.startStrategy('sample_ema_crossover', cfg);
   }
 
-  stop() {
-    this.api.stop().subscribe();
+  async stop() {
+    await this.api.stopStrategy('sample_ema_crossover');
   }
 }
