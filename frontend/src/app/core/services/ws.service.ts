@@ -23,11 +23,11 @@ export class WsService {
       'http://127.0.0.1:8100';
 
     const wsBase = this.win.__WS__ || envAny.ws;
-    const base = wsBase
-      ? String(wsBase).replace(/\/$/, '')
-      : String(httpBase).replace(/^http/, 'ws').replace(/\/$/, '') + '/ws';
+    const host = wsBase && String(wsBase).includes('://')
+      ? String(wsBase).replace(/\/.*$/, '')
+      : String(httpBase).replace(/^http/, 'ws').replace(/\/.*$/, '');
 
-    return base;
+    return host + '/api/ws/logs';
   }
 
   setBaseUrl(url: string) {
@@ -57,11 +57,24 @@ export class WsService {
       try { this.socket.close(); } catch {}
     }
 
-    const ws = new WebSocket(url);
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url);
+    } catch (err) {
+      const evt = new Event('error');
+      this.stream$.next(evt);
+      this.messages$.next({ type: 'error', message: 'WebSocket connection failed', error: err });
+      return undefined;
+    }
     this.socket = ws;
 
     ws.onopen = (evt) => this.stream$.next(evt);
-    ws.onclose = (evt) => this.stream$.next(evt);
+    ws.onclose = (evt) => {
+      this.stream$.next(evt);
+      if (!evt.wasClean) {
+        this.messages$.next({ type: 'error', message: `WebSocket closed: ${evt.code}` });
+      }
+    };
     ws.onerror = (evt) => {
       this.stream$.next(evt as any);
       this.messages$.next({ type: 'error', message: 'WebSocket connection error', event: evt });
