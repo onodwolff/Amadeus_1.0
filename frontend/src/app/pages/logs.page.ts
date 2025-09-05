@@ -9,6 +9,10 @@ import { WsService } from '../core/services/ws.service';
   imports: [CommonModule, FormsModule],
   template: `
     <h1>Logs</h1>
+    <div class="status" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+      <span>Connection: {{ status }}</span>
+      <button *ngIf="status !== 'connected'" type="button" (click)="retry()">Retry</button>
+    </div>
     <div class="card" style="padding:12px;margin-top:8px;">
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <input [(ngModel)]="filter" placeholder="Filter"/>
@@ -22,16 +26,32 @@ export class LogsPage {
   @ViewChild('pane') pane?: ElementRef<HTMLPreElement>;
   lines: string[] = [];
   filter = '';
+  status = 'disconnected';
 
   constructor(private ws: WsService) {}
 
   ngOnInit() {
-    this.ws.connect('/logs');
     this.ws.messages$.subscribe(msg => {
-      const line = typeof msg === 'string' ? msg : JSON.stringify(msg);
-      this.lines.push(line);
+      if (msg?.type === 'error') {
+        const line = msg.message || 'WebSocket error';
+        this.lines.push(line);
+      } else {
+        const line = typeof msg === 'string' ? msg : JSON.stringify(msg);
+        this.lines.push(line);
+      }
       setTimeout(() => this.scrollBottom());
     });
+    this.ws.stream$.subscribe(evt => {
+      if (evt.type === 'open') this.status = 'connected';
+      else if (evt.type === 'close') this.status = 'closed';
+      else if (evt.type === 'error') this.status = 'error';
+    });
+    this.retry();
+  }
+
+  retry() {
+    this.status = 'connecting';
+    this.ws.connect('/logs');
   }
 
   get filtered(): string[] {
