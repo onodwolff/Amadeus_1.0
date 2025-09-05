@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { createChart, ColorType } from 'lightweight-charts';
 import { ApiService } from '../../core/services/api.service';
-import { WsService } from '../../services/ws.service';
+import { WsService } from '../../core/services/ws.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
