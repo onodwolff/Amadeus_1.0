@@ -1,4 +1,3 @@
-
 import { Component, TrackByFunction } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DatePipe, NgClass } from '@angular/common';

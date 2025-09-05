@@ -1,4 +1,3 @@
-
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ThemeService } from './theme.service';

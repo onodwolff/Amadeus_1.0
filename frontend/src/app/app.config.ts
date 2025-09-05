@@ -1,25 +1,21 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideRouter } from '@angular/router';
+import { appRoutes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { routes } from './app.routes';
-
 import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
+import { MessageService } from 'primeng/api';
+import Aura from '@primeng/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideRouter(appRoutes),
     provideAnimationsAsync(),
-    provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' })),
     providePrimeNG({
       theme: {
         preset: Aura,
-        options: {
-          cssLayer: {
-            name: 'primeng',
-            order: 'tailwind-base, primeng, tailwind-utilities'
-          }
-        }
+        options: { darkModeSelector: '.app-dark' }
       }
-    })
+    }),
+    MessageService
   ]
 };

@@ -1,39 +1,88 @@
-@import "tailwindcss";
-
-/* Dark base */
-:root { color-scheme: dark; }
-* { scrollbar-width: thin; scrollbar-color: #2a3138 transparent; }
-::-webkit-scrollbar { height: 8px; width: 8px; }
-::-webkit-scrollbar-thumb { background: #2a3138; border-radius: 8px; }
-
-/* Tokens & utilities */
-.card { @apply bg-[#111418] rounded-2xl shadow-[0_6px_24px_rgba(0,0,0,0.25)] border border-[#232a32]; }
-.card-header { @apply px-4 py-3 border-b border-[#232a32] text-sm text-[#9aa4ad]; }
-.card-body { @apply p-4; }
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-[#1a1f25] text-sm; }
-.btn.primary { @apply bg-[#60a5fa] text-white; }
-.btn:hover { @apply bg-[#151a20]; }
-.btn.primary:hover { @apply brightness-110; }
-.badge { @apply text-xs rounded-lg px-2 py-1 bg-[#1a1f25] text-[#9aa4ad]; }
-.badge.ok { background:#052e1b; color:#22c55e; }
-.badge.err { background:#3a1111; color:#ef4444; }
-.price-up { color:#22c55e; } .price-down { color:#ef4444; }
-
-/* Skeletons */
-.skel {
-  @apply relative overflow-hidden rounded-lg bg-[#141820];
+/* Icons */
+@import 'primeicons/primeicons.css';
+/* AG Grid Quartz */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-quartz.css';
+@import 'ag-grid-community/styles/ag-theme-quartz-dark.css';
+:root {
+  --bg-0:#0f1115;
+  --bg-1:#141821;
+  --surface:#1b2130;
+  --text-0:#e7eaf0;
+  --text-1:#aab3c5;
+  --accent:#3ba3ff;
+  --buy:#22c55e;
+  --sell:#ef4444;
+  --gridline:#2a3346;
+  --warn:#f59e0b;
+  --error:#ef4444;
+  --ok:#22c55e;
+  --card-radius:14px;
+  --shadow:0 6px 20px rgba(0,0,0,.25);
 }
-.skel::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
-  transform:translateX(-100%);
-  animation: skel 1.2s infinite;
-}
-@keyframes skel { to { transform: translateX(100%);} }
 
-/* Line variant without applying custom class */
-.skel-line {
-  @apply relative overflow-hidden rounded-lg bg-[#141820] h-4;
+[data-theme=light] {
+  --bg-0:#f6f8fc;
+  --bg-1:#ffffff;
+  --surface:#ffffff;
+  --text-0:#101828;
+  --text-1:#667085;
+  --accent:#0b7cff;
+  --buy:#16a34a;
+  --sell:#dc2626;
+  --gridline:#e5e7eb;
 }
+
+/* Base */
+html, body {
+  height: 100%;
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+a, .link {
+  color: var(--accent);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+}
+
+.flash-up {
+  animation: flashUp 0.35s;
+}
+
+.flash-down {
+  animation: flashDown 0.35s;
+}
+
+@keyframes flashUp {
+  from {
+    background: #12291b;
+  }
+  to {
+    background: transparent;
+  }
+}
+@keyframes flashDown {
+  from {
+    background: #2b1313;
+  }
+  to {
+    background: transparent;
+  }
+}
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--gridline);
+}
+
+.topbar {
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--gridline);
+}
+
+/*# sourceMappingURL=styles.css.map */

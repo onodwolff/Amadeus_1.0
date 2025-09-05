@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +14,7 @@ export class ThemeService {
   private apply(t: 'dark'|'light') {
     this.current = t;
     document.documentElement.setAttribute('data-theme', t);
-    document.documentElement.classList.toggle('app-dark', t === 'dark');
+    document.documentElement.classList.toggle('app-dark', t === 'dark'); // PrimeNG dark mode
     localStorage.setItem(this.key, t);
   }
 }

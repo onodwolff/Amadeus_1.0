@@ -1,4 +1,3 @@
-
 import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { createChart, ISeriesApi, CandlestickData } from 'lightweight-charts';
 
