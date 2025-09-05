@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
     backtest,
+    risk,
     risk_ext,
     strategies,
     strategy_analytics,
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(trades.router, prefix="/api")
 app.include_router(risk_ext.router, prefix="/api")
+app.include_router(risk.router, prefix="/api")
 app.include_router(backtest.router, prefix="/api")
 app.include_router(strategies.router, prefix="/api")
 app.include_router(strategy_analytics.router, prefix="/api")
