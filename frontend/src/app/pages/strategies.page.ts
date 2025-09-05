@@ -1,11 +1,22 @@
 import { Component } from '@angular/core';
+import { StrategiesModernComponent } from '../features/strategies/strategies-modern.component';
 
 @Component({
   selector: 'app-strategies',
   standalone: true,
+  imports: [StrategiesModernComponent],
   template: `
-    <h1>Strategies</h1>
-    <div class="card" style="padding:12px;margin-top:8px;">Управление стратегиями (стаб).</div>
+    <div class="p-4">
+      <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()"></app-strategies-modern>
+    </div>
   `
 })
-export class StrategiesPage {}
+export class StrategiesPage {
+  onCreate() {
+    console.log('Create strategy');
+  }
+
+  onImport() {
+    console.log('Import strategy config');
+  }
+}
