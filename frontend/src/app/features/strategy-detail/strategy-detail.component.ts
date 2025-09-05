@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   standalone: true,
@@ -49,6 +50,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class StrategyDetailComponent {
   route = inject(ActivatedRoute);
+  api = inject(ApiService);
   rep = signal<any>({});
   fills = signal<any[]>([]);
   sid = '';
@@ -56,15 +58,14 @@ export class StrategyDetailComponent {
 
   async ngOnInit() {
     this.sid = this.route.snapshot.params['sid'];
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    const url = `${base}/strategy/${this.sid}/report?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
-    this.rep.set(await fetch(url).then(r=>r.json()).then(j=>j.report));
-    this.fills.set(await fetch(`${base}/strategy/${this.sid}/fills?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`).then(r=>r.json()).then(j=>j.items));
+    const rep = await this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol);
+    this.rep.set(rep.report);
+    const fills = await this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol);
+    this.fills.set(fills.items);
   }
 
   csvUrl() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
-    return `${base}/strategy/${this.sid}/trades.csv?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`;
+    return this.api.url(`/strategy/${this.sid}/trades.csv?exchange=${this.exchange}&category=${this.category}&symbol=${this.symbol}`);
   }
 
   points() {

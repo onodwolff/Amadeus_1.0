@@ -85,6 +85,16 @@ export class ApiService {
     return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
   }
 
+  getStrategyReport(id: string, exchange: string, category: string, symbol: string) {
+    const url = this.url(`/strategy/${id}/report?exchange=${exchange}&category=${category}&symbol=${symbol}`);
+    return firstValueFrom(this.http.get<{report: any}>(url, { headers: this.headers() }));
+  }
+
+  getStrategyFills(id: string, exchange: string, category: string, symbol: string) {
+    const url = this.url(`/strategy/${id}/fills?exchange=${exchange}&category=${category}&symbol=${symbol}`);
+    return firstValueFrom(this.http.get<{items: any[]}>(url, { headers: this.headers() }));
+  }
+
   // ---- risk endpoints ----
 
   getRiskStatus(): Promise<RiskStatus> {
