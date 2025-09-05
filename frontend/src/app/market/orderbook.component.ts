@@ -48,13 +48,17 @@ export class OrderbookComponent implements OnInit {
     const max =  Number(params?.data?.maxSize) || Math.max(size, 1);
     const width = Math.max(0, Math.min(100, Math.round((size / max) * 100)));
     const colorKey = params?.data?.side === 'bid' ? '--buy' : '--sell';
-    const base = getComputedStyle(document.documentElement)
+    const raw = getComputedStyle(document.documentElement)
       .getPropertyValue(colorKey).trim();
-    const hex = base.replace('#', '');
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    const color = `rgba(${r}, ${g}, ${b}, 0.2)`;
+    const rgbMatch = raw.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    const [r, g, b] = rgbMatch
+      ? rgbMatch.slice(1).map(Number)
+      : [
+          parseInt(raw.slice(1, 3), 16),
+          parseInt(raw.slice(3, 5), 16),
+          parseInt(raw.slice(5, 7), 16),
+        ];
+    const color = `rgba(${r}, ${g}, ${b}, 0.2)`; // adjust alpha as needed
     const el = document.createElement('div');
     el.style.position = 'relative';
     el.style.padding = '0 6px';
