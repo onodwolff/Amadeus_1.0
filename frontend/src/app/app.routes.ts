@@ -1,8 +1,7 @@
-
 import { Routes } from '@angular/router';
-import { MarketPage } from './market/market.page';
+import { HomeComponent } from './home/home.component';
 
-export const appRoutes: Routes = [
-  { path: '', redirectTo: 'market', pathMatch: 'full' },
-  { path: 'market', component: MarketPage },
+export const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: '**', redirectTo: '' }
 ];
