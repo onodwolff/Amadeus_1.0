@@ -7,7 +7,6 @@
   "files": [
     "src/main.ts",
     "src/app/app.routes.ts",
-    "src/app/app-root.component.ts",
     "src/app/shell/app-shell.component.ts",
     "src/environments/environment.ts"
   ],
