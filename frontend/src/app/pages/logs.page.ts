@@ -51,7 +51,7 @@ export class LogsPage {
 
   retry() {
     this.status = 'connecting';
-    this.ws.connect('/logs');
+    this.ws.connect('logs');
   }
 
   get filtered(): string[] {
