@@ -1,11 +1,12 @@
 import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
   standalone: true,
   selector: 'app-strategies-modern',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-semibold">Strategies</h2>
@@ -15,18 +16,18 @@ import { ApiService } from '../../core/services/api.service';
     </div>
   </div>
   <div class="grid lg:grid-cols-3 gap-3">
-    <div class="card p-4" *ngFor="let s of items()">
+    <a class="card p-4 block" *ngFor="let s of items()" [routerLink]="['/strategies', s.id]">
       <div class="flex items-center justify-between">
         <div class="font-medium">{{ s.id }}</div>
         <span class="badge" [class.ok]="s.running" [class.err]="!s.running">{{ s.running ? 'running' : 'stopped' }}</span>
       </div>
       <div class="flex items-center gap-3 mt-3">
-        <button class="btn" title="Start" (click)="start(s.id)">▶</button>
-        <button class="btn" title="Stop" (click)="stop(s.id)">⏸</button>
-        <button class="btn" title="Edit config">⚙</button>
-        <button class="btn" title="Logs">🧾</button>
+        <button class="btn" title="Start" (click)="start(s.id); $event.preventDefault(); $event.stopPropagation()">▶</button>
+        <button class="btn" title="Stop" (click)="stop(s.id); $event.preventDefault(); $event.stopPropagation()">⏸</button>
+        <button class="btn" title="Edit config" (click)="$event.preventDefault(); $event.stopPropagation()">⚙</button>
+        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()">🧾</button>
       </div>
-    </div>
+    </a>
   </div>
   `
 })
