@@ -21,6 +21,8 @@ All API and WebSocket endpoints require a static bearer token.
 
 2. **Frontend** – expose the same token to the browser via `window.__TOKEN__` (and optionally `window.__WS__` for a custom WebSocket URL). The API base URL is configured in `src/environments/environment.ts`. The Angular `ApiService` automatically sends the token in the `Authorization: Bearer` header and the `WsService` appends it as a `token` query parameter.
 
+   Demo mode is disabled by default. To run the UI with sample data, set `demo: true` in `frontend/src/environments/environment.ts` and rebuild the frontend.
+
 3. **Making requests** – clients must include the token:
    - HTTP: `Authorization: Bearer <token>`
    - WebSocket: connect to `/ws?token=<token>`
