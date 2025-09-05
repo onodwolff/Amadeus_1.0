@@ -58,9 +58,11 @@ export class StrategyDetailComponent {
 
   async ngOnInit() {
     this.sid = this.route.snapshot.params['sid'];
-    const rep = await this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol);
+    const [rep, fills] = await Promise.all([
+      this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol),
+      this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol),
+    ]);
     this.rep.set(rep.report);
-    const fills = await this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol);
     this.fills.set(fills.items);
   }
 
