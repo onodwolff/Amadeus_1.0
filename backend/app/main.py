@@ -20,7 +20,7 @@ app.include_router(strategies.router, prefix="/api")
 app.include_router(backtest.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
-app.include_router(ws.router)  # /ws
+app.include_router(ws.router, prefix="/api")  # /api/ws
 
 @app.get("/")
 def root():
