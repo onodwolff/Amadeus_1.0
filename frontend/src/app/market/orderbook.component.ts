@@ -47,13 +47,14 @@ export class OrderbookComponent implements OnInit {
     const size = Number(params.value) || 0;
     const max =  Number(params?.data?.maxSize) || Math.max(size, 1);
     const width = Math.max(0, Math.min(100, Math.round((size / max) * 100)));
-    const isBid = params?.data?.side === 'bid';
-    const color = isBid ? 'var(--buy)' : 'var(--sell)';
+    const colorKey = params?.data?.side === 'bid' ? '--buy' : '--sell';
+    const base = getComputedStyle(document.documentElement)
+      .getPropertyValue(colorKey).trim();
     const el = document.createElement('div');
     el.style.position = 'relative';
     el.style.padding = '0 6px';
     el.textContent = String(size);
-    el.style.background = `linear-gradient(to right, ${color}33 ${width}%, transparent ${width}%)`;
+    el.style.background = `linear-gradient(to right, ${base}33 ${width}%, transparent ${width}%)`;
     return el;
   }
 }
