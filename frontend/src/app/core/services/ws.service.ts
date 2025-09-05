@@ -23,9 +23,11 @@ export class WsService {
       'http://127.0.0.1:8100/api';
 
     const apiRoot = String(httpBase).replace(/\/$/, '');
-    const derived = apiRoot
-      .replace(/^http/, 'ws')
-      .replace(/\/api$/, '/ws');
+    const derived =
+      apiRoot
+        .replace(/^http/, 'ws')
+        .replace(/\/api(?:\/.*)?$/, '') +
+      '/api/ws';
     const wsBase = this.win.__WS__ || derived;
     return String(wsBase).replace(/\/$/, '');
   }
@@ -76,7 +78,7 @@ export class WsService {
     };
     ws.onerror = (evt) => {
       this.stream$.next(evt as any);
-      this.messages$.next({ type: 'error', message: 'WebSocket connection error', event: evt });
+      this.messages$.next({ type: 'error', message: 'Connection lost. Please retry.', event: evt });
     };
     ws.onmessage = (evt) => {
       this.stream$.next(evt);

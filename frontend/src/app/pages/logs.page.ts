@@ -44,7 +44,10 @@ export class LogsPage {
     this.ws.stream$.subscribe(evt => {
       if (evt.type === 'open') this.status = 'connected';
       else if (evt.type === 'close') this.status = 'closed';
-      else if (evt.type === 'error') this.status = 'error';
+      else if (evt.type === 'error') {
+        this.status = 'error';
+        this.lines.push('Connection lost. Please retry.');
+      }
     });
     this.retry();
   }
