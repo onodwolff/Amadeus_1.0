@@ -27,7 +27,7 @@ export class WsService {
       ? String(wsBase).replace(/\/.*$/, '')
       : String(httpBase).replace(/^http/, 'ws').replace(/\/.*$/, '');
 
-    return host + '/api/ws/logs';
+    return host + '/api/ws';
   }
 
   setBaseUrl(url: string) {
