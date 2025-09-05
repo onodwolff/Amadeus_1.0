@@ -1,7 +1,16 @@
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import trades, risk_ext, backtest, strategies
+
+from .routers import (
+    backtest,
+    risk_ext,
+    strategies,
+    strategy_analytics,
+    strategy_export,
+    trades,
+)
 
 app = FastAPI(title="Amadeus API (patch v12 mega)")
 
@@ -22,6 +31,10 @@ app.include_router(trades.router, prefix="/api")
 app.include_router(risk_ext.router, prefix="/api")
 app.include_router(backtest.router, prefix="/api")
 app.include_router(strategies.router, prefix="/api")
+app.include_router(strategy_analytics.router, prefix="/api")
+app.include_router(strategy_export.router, prefix="/api")
+
 
 @app.get("/healthz")
-def healthz(): return {"ok": True}
+def healthz():
+    return {"ok": True}
