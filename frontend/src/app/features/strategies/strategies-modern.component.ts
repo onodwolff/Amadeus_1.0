@@ -22,10 +22,14 @@ import { ApiService } from '../../core/services/api.service';
         <span class="badge" [class.ok]="s.running" [class.err]="!s.running">{{ s.running ? 'running' : 'stopped' }}</span>
       </div>
       <div class="flex items-center gap-3 mt-3">
-        <button class="btn" title="Start" (click)="start(s.id); $event.preventDefault(); $event.stopPropagation()">▶</button>
-        <button class="btn" title="Stop" (click)="stop(s.id); $event.preventDefault(); $event.stopPropagation()">⏸</button>
-        <button class="btn" title="Edit config" (click)="$event.preventDefault(); $event.stopPropagation()">⚙</button>
-        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()">🧾</button>
+        <button class="btn" title="Start" (click)="start(s.id); $event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">
+          {{ loading()[s.id] ? '⏳' : '▶' }}
+        </button>
+        <button class="btn" title="Stop" (click)="stop(s.id); $event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">
+          {{ loading()[s.id] ? '⏳' : '⏸' }}
+        </button>
+        <button class="btn" title="Edit config" (click)="$event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">⚙</button>
+        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">🧾</button>
       </div>
     </a>
   </div>
@@ -38,6 +42,7 @@ export class StrategiesModernComponent implements OnInit {
   @Output() importCfg = new EventEmitter<void>();
 
   items = signal<{id: string; running: boolean}[]>([]);
+  loading = signal<Record<string, boolean>>({});
 
   async ngOnInit() {
     await this.refresh();
@@ -48,13 +53,29 @@ export class StrategiesModernComponent implements OnInit {
     this.items.set(list);
   }
 
+  private setLoading(id: string, v: boolean) {
+    const l = { ...this.loading() };
+    l[id] = v;
+    this.loading.set(l);
+  }
+
   async start(id: string) {
-    await this.api.startStrategy(id, {});
-    await this.refresh();
+    this.setLoading(id, true);
+    try {
+      await this.api.startStrategy(id, {});
+      this.items.update(list => list.map(it => it.id === id ? { ...it, running: true } : it));
+    } finally {
+      this.setLoading(id, false);
+    }
   }
 
   async stop(id: string) {
-    await this.api.stopStrategy(id);
-    await this.refresh();
+    this.setLoading(id, true);
+    try {
+      await this.api.stopStrategy(id);
+      this.items.update(list => list.map(it => it.id === id ? { ...it, running: false } : it));
+    } finally {
+      this.setLoading(id, false);
+    }
   }
 }
