@@ -20,21 +20,21 @@ export class WsService {
     const httpBase: string =
       this.win.__API__ ||
       (typeof apiConf === 'string' ? apiConf : apiConf?.baseUrl) ||
-      'http://127.0.0.1:8100';
+      'http://127.0.0.1:8100/api';
 
-    const wsBase = this.win.__WS__ || envAny.ws;
-    const host = wsBase && String(wsBase).includes('://')
-      ? String(wsBase).replace(/\/.*$/, '')
-      : String(httpBase).replace(/^http/, 'ws').replace(/\/.*$/, '');
-
-    return host + '/api/ws';
+    const apiRoot = String(httpBase).replace(/\/$/, '');
+    const derived = apiRoot
+      .replace(/^http/, 'ws')
+      .replace(/\/api$/, '/ws');
+    const wsBase = this.win.__WS__ || derived;
+    return String(wsBase).replace(/\/$/, '');
   }
 
   setBaseUrl(url: string) {
     this.baseOverride = url ? String(url).replace(/\/$/, '') : undefined;
   }
 
-  connect(path: string = ''): WebSocket | undefined {
+  connect(channel: string = ''): WebSocket | undefined {
     this.stop$.next();
 
     if ((environment as any).demo) {
@@ -49,9 +49,8 @@ export class WsService {
       return undefined;
     }
 
-    const base = this.baseUrl;
-    const adj = path ? (path.startsWith('/') ? path : '/' + path) : '';
-    const url = path && path.includes('://') ? path : base + adj;
+    const adj = channel ? '/' + String(channel).replace(/^\//, '') : '';
+    const url = this.baseUrl + adj;
 
     if (this.socket) {
       try { this.socket.close(); } catch {}
