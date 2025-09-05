@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { RiskStatus } from '../../models';
 
 export interface Candle { ts:number; o:number; h:number; l:number; c:number; v:number; tf:string; symbol:string; }
 
@@ -84,7 +85,27 @@ export class ApiService {
     return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
   }
 
-  // risk limits/state endpoints are not available yet
+  // ---- risk endpoints ----
+
+  getRiskStatus(): Promise<RiskStatus> {
+    const url = this.url('/risk/status');
+    return firstValueFrom(this.http.get<RiskStatus>(url, { headers: this.headers() }));
+  }
+
+  getRiskLimits() {
+    const url = this.url('/risk/limits');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  setRiskLimits(body: any) {
+    const url = this.url('/risk/limits');
+    return firstValueFrom(this.http.post(url, body, { headers: this.headers() }));
+  }
+
+  unlockRisk() {
+    const url = this.url('/risk/unlock');
+    return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
+  }
 
   getBalances() {
     const url = this.url('/portfolio/balances');

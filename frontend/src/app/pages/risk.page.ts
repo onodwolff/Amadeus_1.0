@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { AppMaterialModule } from '../app.module';
 import { RiskStatus } from '../models';
+import { ApiService } from '../core/services/api.service';
 
 @Component({
   selector: 'app-risk',
@@ -61,6 +62,7 @@ import { RiskStatus } from '../models';
 })
 export class RiskPage {
   private fb = inject(FormBuilder);
+  private api = inject(ApiService);
 
   status: RiskStatus | null = null;
   loadingStatus = true;
@@ -78,24 +80,51 @@ export class RiskPage {
   loadingLimits = true;
 
   ngOnInit() {
-    // risk endpoints disabled
-    this.loadingStatus = false;
-    this.loadingLimits = false;
+    this.refreshStatus();
+    this.refreshLimits();
   }
 
-  refreshStatus() {
-    console.warn('Risk status endpoint not available');
+  async refreshStatus() {
+    this.loadingStatus = true;
+    try {
+      this.status = await this.api.getRiskStatus();
+    } catch (err) {
+      console.error('Failed to load risk status', err);
+    } finally {
+      this.loadingStatus = false;
+    }
   }
 
   async refreshLimits() {
-    console.warn('Risk limits endpoint not available');
+    this.loadingLimits = true;
+    try {
+      const limits = await this.api.getRiskLimits();
+      this.limitsForm.patchValue(limits || {});
+    } catch (err) {
+      console.error('Failed to load risk limits', err);
+    } finally {
+      this.loadingLimits = false;
+    }
   }
 
   async save() {
-    console.warn('Risk limits endpoint not available');
+    this.loadingLimits = true;
+    try {
+      await this.api.setRiskLimits(this.limitsForm.value);
+      await this.refreshLimits();
+    } catch (err) {
+      console.error('Failed to save risk limits', err);
+    } finally {
+      this.loadingLimits = false;
+    }
   }
 
-  unlock() {
-    console.warn('Risk unlock endpoint not available');
+  async unlock() {
+    try {
+      await this.api.unlockRisk();
+      await this.refreshStatus();
+    } catch (err) {
+      console.error('Failed to unlock risk', err);
+    }
   }
 }
