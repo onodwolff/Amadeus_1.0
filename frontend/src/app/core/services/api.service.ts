@@ -1,74 +1,149 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Candle { ts:number; o:number; h:number; l:number; c:number; v:number; tf:string; symbol:string; }
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  base = (window as any).__API__ || 'http://localhost:8000/api';
-  token = (window as any).__TOKEN__ || '';
+  private http = inject(HttpClient);
+  private win: any = (globalThis as any);
 
-  private headers() {
-    return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
-  }
-
-  async getOHLCV(symbol: string, tf = '1m', limit = 200, exchange='mock', category='spot'): Promise<Candle[]> {
-    const url = `${this.base}/market/ohlcv?exchange=${exchange}&category=${category}&symbol=${encodeURIComponent(symbol)}&tf=${tf}&limit=${limit}`;
-    const r = await fetch(url, { headers: this.headers() });
-    return await r.json();
-  }
-
-  async listStrategies(): Promise<{id:string; running:boolean}[]> {
-    const r = await fetch(`${this.base}/strategies`, { headers: this.headers() });
-    return await r.json();
-  }
-  async getSchema(id: string) {
-    const r = await fetch(`${this.base}/strategies/${id}/schema`, { headers: this.headers() });
-    return await r.json();
-  }
-  async startStrategy(id: string, cfg: any) {
-    const r = await fetch(`${this.base}/strategies/${id}/start`, {
-      method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(cfg)
-    });
-    return await r.json();
-  }
-  async stopStrategy(id: string) {
-    const r = await fetch(`${this.base}/strategies/${id}/stop`, { method:'POST', headers: this.headers() });
-    return await r.json();
+  private get baseRoot(): string {
+    const envAny: any = environment as any;
+    const apiConf = envAny.api;
+    const httpBase: string =
+      this.win.__API__ ||
+      (typeof apiConf === 'string' ? apiConf : apiConf?.baseUrl) ||
+      'http://localhost:8000/api';
+    return String(httpBase).replace(/\/$/, '');
   }
 
-  // Risk API
-  async getRiskLimits() { const r = await fetch(`${this.base}/risk/limits`, { headers: this.headers() }); return await r.json(); }
-  async setRiskLimits(body: any) {
-    const r = await fetch(`${this.base}/risk/limits`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body) });
-    return await r.json();
-  }
-  async getRiskState() { const r = await fetch(`${this.base}/risk/state`, { headers: this.headers() }); return await r.json(); }
-
-  // Portfolio/Orders
-  async getBalances() { const r = await fetch(`${this.base}/portfolio/balances`, { headers: this.headers() }); return await r.json(); }
-  async getPositions() { const r = await fetch(`${this.base}/portfolio/positions`, { headers: this.headers() }); return await r.json(); }
-  async getOrders(limit=100) { const r = await fetch(`${this.base}/orders?limit=${limit}`, { headers: this.headers() }); return await r.json(); }
-  async getFills(limit=200) { const r = await fetch(`${this.base}/orders/fills?limit=${limit}`, { headers: this.headers() }); return await r.json(); }
-
-  // Backtest
-  async runBacktest(cfg: any) {
-    const r = await fetch(`${this.base}/backtest/run`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(cfg) });
-    return await r.json();
+  private get token(): string {
+    const envAny: any = environment as any;
+    return this.win.__TOKEN__ || envAny.token || envAny.api?.token || '';
   }
 
-  // Keys
-  async saveKeys(body: any) {
-    const r = await fetch(`${this.base}/keys`, { method:'POST', headers: { 'Content-Type':'application/json', ...this.headers() }, body: JSON.stringify(body) });
-    return await r.json();
-  }
-  async getKeys(exchange: string, category: string) {
-    const r = await fetch(`${this.base}/keys?exchange=${exchange}&category=${category}`, { headers: this.headers() });
-    return await r.json();
+  private headers(): HttpHeaders {
+    const h: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.token) h['Authorization'] = `Bearer ${this.token}`;
+    return new HttpHeaders(h);
   }
 
-  // Dashboard
-  async getDashboardSummary() {
-    const r = await fetch(`${this.base}/dashboard/summary`, { headers: this.headers() });
-    return await r.json();
+  url(path: string): string {
+    if (!path.startsWith('/')) path = '/' + path;
+    return this.baseRoot + path;
+  }
+
+  get<T = any>(path: string): Observable<T>    { return this.http.get<T>(this.url(path), { headers: this.headers() }); }
+  post<T = any>(path: string, body: any): Observable<T> { return this.http.post<T>(this.url(path), body, { headers: this.headers() }); }
+  put<T = any>(path: string, body: any): Observable<T>  { return this.http.put<T>(this.url(path), body, { headers: this.headers() }); }
+  delete<T = any>(path: string): Observable<T>          { return this.http.delete<T>(this.url(path), { headers: this.headers() }); }
+
+  running$ = new BehaviorSubject<boolean>(false);
+  setRunning(v: boolean) { this.running$.next(!!v); }
+
+  status() { return this.get('/status'); }
+  start(body?: any) { return this.post('/start', body ?? {}); }
+  stop()  { return this.post('/stop', {}); }
+  cmd(command: string, payload: any = {}) { return this.post('/cmd', { cmd: command, ...payload }); }
+
+  getConfig()         { return this.get('/config'); }
+  putConfig(cfg: any) { return this.put('/config', cfg); }
+  getDefaultConfig()  { return this.get('/config/default'); }
+  restoreConfig()     { return this.post('/config/restore', {}); }
+
+  scan(body: any)     { return this.post('/scan', body); }
+
+  historyStats()                      { return this.get('/history/stats'); }
+  historyTrades(limit = 100, offset = 0) { return this.get(`/history/trades?limit=${limit}&offset=${offset}`); }
+  historyOrders(limit = 100, offset = 0) { return this.get(`/history/orders?limit=${limit}&offset=${offset}`); }
+  historyClear(kind: string)          { return this.post('/history/clear', { kind }); }
+  historyExportUrl(kind: string)      { return this.url(`/history/export?kind=${encodeURIComponent(kind)}`); }
+
+  getRiskStatus() { return this.get('/risk/status'); }
+  unlockRisk()    { return this.post('/risk/unlock', {}); }
+
+  // Methods returning Promises
+  getOHLCV(symbol: string, tf = '1m', limit = 200, exchange='mock', category='spot'): Promise<Candle[]> {
+    const url = this.url(`/market/ohlcv?exchange=${exchange}&category=${category}&symbol=${encodeURIComponent(symbol)}&tf=${tf}&limit=${limit}`);
+    return firstValueFrom(this.http.get<Candle[]>(url, { headers: this.headers() }));
+  }
+
+  listStrategies(): Promise<{id:string; running:boolean}[]> {
+    const url = this.url('/strategies');
+    return firstValueFrom(this.http.get<{id:string; running:boolean}[]>(url, { headers: this.headers() }));
+  }
+
+  getSchema(id: string) {
+    const url = this.url(`/strategies/${id}/schema`);
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  startStrategy(id: string, cfg: any) {
+    const url = this.url(`/strategies/${id}/start`);
+    return firstValueFrom(this.http.post(url, cfg, { headers: this.headers() }));
+  }
+
+  stopStrategy(id: string) {
+    const url = this.url(`/strategies/${id}/stop`);
+    return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
+  }
+
+  getRiskLimits() {
+    const url = this.url('/risk/limits');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  setRiskLimits(body: any) {
+    const url = this.url('/risk/limits');
+    return firstValueFrom(this.http.post(url, body, { headers: this.headers() }));
+  }
+
+  getRiskState() {
+    const url = this.url('/risk/state');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  getBalances() {
+    const url = this.url('/portfolio/balances');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  getPositions() {
+    const url = this.url('/portfolio/positions');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  getOrders(limit=100) {
+    const url = this.url(`/orders?limit=${limit}`);
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  getFills(limit=200) {
+    const url = this.url(`/orders/fills?limit=${limit}`);
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  runBacktest(cfg: any) {
+    const url = this.url('/backtest/run');
+    return firstValueFrom(this.http.post(url, cfg, { headers: this.headers() }));
+  }
+
+  saveKeys(body: any) {
+    const url = this.url('/keys');
+    return firstValueFrom(this.http.post(url, body, { headers: this.headers() }));
+  }
+
+  getKeys(exchange: string, category: string) {
+    const url = this.url(`/keys?exchange=${exchange}&category=${category}`);
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
+
+  getDashboardSummary() {
+    const url = this.url('/dashboard/summary');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
   }
 }
+

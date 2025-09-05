@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../services/api.service';
+import { ApiService } from '../core/services/api.service';
 
 @Component({
   standalone: true,

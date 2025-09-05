@@ -1,6 +1,6 @@
 import { Component, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api.service';
+import { ApiService } from '../../core/services/api.service';
 import { ScriptLoaderService } from '../../services/script-loader.service';
 import { firstValueFrom } from 'rxjs';
 

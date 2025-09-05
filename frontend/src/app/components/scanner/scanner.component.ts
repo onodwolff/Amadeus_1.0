@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppMaterialModule } from '../../app.module';
-import { ApiService } from '../../services/api.service';
+import { ApiService } from '../../core/services/api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Config, ConfigGetResponse, ConfigResponse, PairScore, ScanResponse } from '../../models';
 
