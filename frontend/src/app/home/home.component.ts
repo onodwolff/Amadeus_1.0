@@ -12,7 +12,7 @@ import { InputTextModule } from 'primeng/inputtext';
   imports: [CommonModule, ToastModule, ButtonModule, TableModule, InputTextModule],
   providers: [MessageService],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
   rows = [
