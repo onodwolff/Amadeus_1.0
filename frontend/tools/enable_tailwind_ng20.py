@@ -18,8 +18,8 @@ def patch_target(target: dict):
     opts = target.get("options")
     if not isinstance(opts, dict): 
         target["options"] = opts = {}
-    if opts.get("tailwindConfig") != "tailwind.config.cjs":
-        opts["tailwindConfig"] = "tailwind.config.cjs"
+    if opts.get("tailwindConfig") != "tailwind.config.js":
+        opts["tailwindConfig"] = "tailwind.config.js"
         return True
     return False
 
@@ -31,7 +31,7 @@ for name, proj in projects.items():
     for key in ("build", "test"):
         if key in arch and patch_target(arch[key]):
             changed = True
-            print(f"[+] {name}:{key} -> tailwindConfig=tailwind.config.cjs")
+            print(f"[+] {name}:{key} -> tailwindConfig=tailwind.config.js")
 
 if changed:
     angular.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
