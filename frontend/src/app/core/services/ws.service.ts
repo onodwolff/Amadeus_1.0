@@ -52,7 +52,10 @@ export class WsService {
 
     ws.onopen = (evt) => this.stream$.next(evt);
     ws.onclose = (evt) => this.stream$.next(evt);
-    ws.onerror = (evt) => this.stream$.next(evt as any);
+    ws.onerror = (evt) => {
+      this.stream$.next(evt as any);
+      this.messages$.next({ type: 'error', message: 'WebSocket connection error', event: evt });
+    };
     ws.onmessage = (evt) => {
       this.stream$.next(evt);
       try { this.messages$.next(JSON.parse(evt.data)); }
