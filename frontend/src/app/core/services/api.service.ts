@@ -44,7 +44,7 @@ export class ApiService {
   running$ = new BehaviorSubject<boolean>(false);
   setRunning(v: boolean) { this.running$.next(!!v); }
 
-  status() { return this.get('/status'); }
+  // status endpoint not available yet
   start(body?: any) { return this.post('/start', body ?? {}); }
   stop()  { return this.post('/stop', {}); }
   cmd(command: string, payload: any = {}) { return this.post('/cmd', { cmd: command, ...payload }); }
@@ -56,14 +56,7 @@ export class ApiService {
 
   scan(body: any)     { return this.post('/scan', body); }
 
-  historyStats()                      { return this.get('/history/stats'); }
-  historyTrades(limit = 100, offset = 0) { return this.get(`/history/trades?limit=${limit}&offset=${offset}`); }
-  historyOrders(limit = 100, offset = 0) { return this.get(`/history/orders?limit=${limit}&offset=${offset}`); }
-  historyClear(kind: string)          { return this.post('/history/clear', { kind }); }
-  historyExportUrl(kind: string)      { return this.url(`/history/export?kind=${encodeURIComponent(kind)}`); }
-
-  getRiskStatus() { return this.get('/risk/status'); }
-  unlockRisk()    { return this.post('/risk/unlock', {}); }
+  // history and risk endpoints are disabled until backend support
 
   // Methods returning Promises
   getOHLCV(symbol: string, tf = '1m', limit = 200, exchange='mock', category='spot'): Promise<Candle[]> {
@@ -91,20 +84,7 @@ export class ApiService {
     return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
   }
 
-  getRiskLimits() {
-    const url = this.url('/risk/limits');
-    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
-  }
-
-  setRiskLimits(body: any) {
-    const url = this.url('/risk/limits');
-    return firstValueFrom(this.http.post(url, body, { headers: this.headers() }));
-  }
-
-  getRiskState() {
-    const url = this.url('/risk/state');
-    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
-  }
+  // risk limits/state endpoints are not available yet
 
   getBalances() {
     const url = this.url('/portfolio/balances');
@@ -141,9 +121,6 @@ export class ApiService {
     return firstValueFrom(this.http.get(url, { headers: this.headers() }));
   }
 
-  getDashboardSummary() {
-    const url = this.url('/dashboard/summary');
-    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
-  }
+  // dashboard summary endpoint not available yet
 }
 

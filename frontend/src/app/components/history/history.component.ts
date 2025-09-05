@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
-import { ApiService } from '../../core/services/api.service';
 import { HistoryResponse, HistoryStats, OrderHistoryItem, TradeHistoryItem } from '../../models';
 
 @Component({
@@ -18,40 +17,32 @@ export class HistoryComponent {
     loadingT = false;
     stats: HistoryStats = { orders: 0, trades: 0 };
 
-    constructor(private api: ApiService) {}
+    constructor() {}
 
     ngOnInit() {
         this.refreshAll();
     }
 
     refreshAll() {
-        this.refreshOrders();
-        this.refreshTrades();
-        this.api.historyStats().subscribe(s => this.stats = s);
+        // history endpoints disabled
+        this.orders = [];
+        this.trades = [];
+        this.stats = { orders: 0, trades: 0 };
     }
 
     refreshOrders() {
-        this.loadingO = true;
-        this.api.historyOrders(200, 0).subscribe({
-            next: (res: HistoryResponse<OrderHistoryItem>) => { this.orders = res.items ?? []; this.loadingO = false; },
-            error: () => { this.loadingO = false; }
-        });
+        this.loadingO = false;
     }
 
     refreshTrades() {
-        this.loadingT = true;
-        this.api.historyTrades(200, 0).subscribe({
-            next: (res: HistoryResponse<TradeHistoryItem>) => { this.trades = res.items ?? []; this.loadingT = false; },
-            error: () => { this.loadingT = false; }
-        });
+        this.loadingT = false;
     }
 
     export(kind: 'orders'|'trades') {
-        const url = this.api.historyExportUrl(kind);
-        window.open(url, '_blank');
+        // экспорт истории отключён
     }
 
     clear(kind: 'orders'|'trades'|'all') {
-        this.api.historyClear(kind).subscribe(() => this.refreshAll());
+        // очистка истории отключена
     }
 }
