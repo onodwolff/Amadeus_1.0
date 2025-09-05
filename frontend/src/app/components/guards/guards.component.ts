@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
-import { ApiService } from '../../core/services/api.service';
 
 @Component({
     selector: 'app-guards',
@@ -15,19 +14,16 @@ export class GuardsComponent {
     loading = false;
     error = '';
 
-    constructor(private api: ApiService) {}
+    constructor() {}
 
     ngOnInit() { this.refresh(); }
 
     refresh() {
-        this.loading = true;
-        this.api.getRiskStatus().subscribe({
-            next: (res) => { this.data = res; this.loading = false; this.error=''; },
-            error: (e) => { this.error = e?.message ?? 'Ошибка'; this.loading = false; }
-        });
+        this.loading = false;
+        console.warn('Risk status endpoint not available');
     }
 
     unlock() {
-        this.api.unlockRisk().subscribe({ next: () => this.refresh() });
+        console.warn('Risk unlock endpoint not available');
     }
 }

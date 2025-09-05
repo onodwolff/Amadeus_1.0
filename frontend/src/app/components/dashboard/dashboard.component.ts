@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppMaterialModule } from '../../app.module';
 import { ApiService } from '../../core/services/api.service';
-import { BotStatus } from '../../models';
 import { WsService } from '../../core/services/ws.service';
 import { Subscription } from 'rxjs';
 import { EquitySparklineComponent } from '../equity-sparkline/equity-sparkline.component'; // ⬅️ импорт спарклайна
@@ -31,6 +30,7 @@ export class DashboardComponent implements OnDestroy {
   private sub = new Subscription();
 
   constructor(private api: ApiService, private wsSvc: WsService, private snack: MatSnackBar) {
+    // статус бэкенда недоступен
     this.refreshStatus();
     this.bindWs();
   }
@@ -38,14 +38,7 @@ export class DashboardComponent implements OnDestroy {
   ngOnDestroy(): void { this.sub.unsubscribe(); }
 
   refreshStatus() {
-    this.api.status().subscribe({
-      next: (s: BotStatus) => {
-        this.running = !!s?.running;
-        this.symbol = s?.symbol || '';
-        this.metrics = s?.metrics || {};
-        this.cfg = s?.cfg || {};
-      }
-    });
+    // эндпоинт статуса отключён
   }
 
   private bindWs() {

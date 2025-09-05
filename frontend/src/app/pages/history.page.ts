@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../core/services/api.service';
 import { OrderHistoryItem, TradeHistoryItem } from '../models';
 
 @Component({
@@ -66,19 +65,18 @@ export class HistoryPage implements OnInit {
     orders: OrderHistoryItem[] = [];
     trades: TradeHistoryItem[] = [];
 
-    constructor(private api: ApiService) {}
+    constructor() {}
 
     ngOnInit() {
-        this.loadOrders();
-        this.loadTrades();
+        // history endpoints disabled
     }
 
     loadOrders() {
-        this.api.historyOrders(this.limit, this.orderOffset).subscribe(res => this.orders = res?.items || []);
+        this.orders = [];
     }
 
     loadTrades() {
-        this.api.historyTrades(this.limit, this.tradeOffset).subscribe(res => this.trades = res?.items || []);
+        this.trades = [];
     }
 
     nextOrders() {

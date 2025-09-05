@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../core/services/api.service';
+// ApiService removed until backend supports dashboard
 
 @Component({
   standalone: true,
@@ -21,20 +21,7 @@ import { ApiService } from '../core/services/api.service';
     strategies = signal(0);
     orders = signal(0);
 
-    constructor(private api: ApiService) {
-      this.api.status().subscribe();
-      this.loadSummary();
-    }
-
-    private async loadSummary() {
-      try {
-        const summary: any = await this.api.getDashboardSummary();
-        this.equity.set(Number(summary?.equity ?? 0));
-        this.pnl.set(Number(summary?.pnl ?? 0));
-        this.strategies.set(Number(summary?.strategies ?? 0));
-        this.orders.set(Number(summary?.orders ?? 0));
-      } catch (err) {
-        console.error('Failed to load dashboard summary', err);
-      }
+    constructor() {
+      // dashboard summary not available
     }
   }

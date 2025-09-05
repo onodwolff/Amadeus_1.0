@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { AppMaterialModule } from '../app.module';
-import { ApiService } from '../core/services/api.service';
 import { RiskStatus } from '../models';
 
 @Component({
@@ -61,7 +60,6 @@ import { RiskStatus } from '../models';
   `
 })
 export class RiskPage {
-  private api = inject(ApiService);
   private fb = inject(FormBuilder);
 
   status: RiskStatus | null = null;
@@ -80,41 +78,24 @@ export class RiskPage {
   loadingLimits = true;
 
   ngOnInit() {
-    this.refreshStatus();
-    this.refreshLimits();
+    // risk endpoints disabled
+    this.loadingStatus = false;
+    this.loadingLimits = false;
   }
 
   refreshStatus() {
-    this.loadingStatus = true;
-    this.api.getRiskStatus().subscribe({
-      next: (d: RiskStatus) => {
-        this.status = d;
-        this.loadingStatus = false;
-      },
-      error: () => {
-        this.loadingStatus = false;
-      },
-    });
+    console.warn('Risk status endpoint not available');
   }
 
   async refreshLimits() {
-    this.loadingLimits = true;
-    try {
-      const lim: any = await this.api.getRiskLimits();
-      if (lim) {
-        this.limitsForm.patchValue(lim);
-      }
-    } finally {
-      this.loadingLimits = false;
-    }
+    console.warn('Risk limits endpoint not available');
   }
 
   async save() {
-    await this.api.setRiskLimits(this.limitsForm.value);
-    this.refreshStatus();
+    console.warn('Risk limits endpoint not available');
   }
 
   unlock() {
-    this.api.unlockRisk().subscribe(() => this.refreshStatus());
+    console.warn('Risk unlock endpoint not available');
   }
 }

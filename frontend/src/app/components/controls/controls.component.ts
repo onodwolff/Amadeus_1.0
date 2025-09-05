@@ -21,7 +21,7 @@ export class ControlsComponent implements OnDestroy {
   constructor(private api: ApiService, private snack: MatSnackBar) {
     // глобальный стейт запуска бота
     this.sub = this.api.running$.subscribe(v => this.running = !!v);
-    // лёгкий авто-рефреш статуса (как запасной канал, если WS не пришёл)
+    // статус сервера временно недоступен
     this.autoRefreshSub = timer(0, 5000).subscribe(_ => this.refresh());
   }
 
@@ -31,10 +31,7 @@ export class ControlsComponent implements OnDestroy {
   }
 
   refresh() {
-    this.api.status().subscribe({
-      next: s => { this.running = !!s?.running; },
-      error: _ => {}
-    });
+    // статус эндпоинт отключён
   }
 
   async doStart() {
@@ -60,13 +57,7 @@ export class ControlsComponent implements OnDestroy {
       next: _ => {
         this.api.setRunning(false);
         this.running = false;
-        // после остановки показываем финальную статистику
-        this.api.historyStats().subscribe(stats => {
-          this.api.historyTrades(10000, 0).subscribe(res => {
-            const pnl = (res.items || []).reduce((s, t) => s + (t.pnl || 0), 0);
-            this.snack.open(`Стоп. PnL: ${pnl.toFixed(2)}, Trades: ${stats.trades}`, 'OK', { duration: 4000 });
-          });
-        });
+        this.snack.open('Стоп', 'OK', { duration: 4000 });
       },
       error: err => {
         this.snack.open(`Ошибка остановки: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
