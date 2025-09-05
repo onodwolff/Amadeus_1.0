@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -74,9 +75,13 @@ export class AnalyticsComponent {
   }
 
   async load() {
-    const d = await fetch(`${(this.api as any).base}/analytics/pnl/daily?symbol=${this.symbol}&exchange=${this.exchange}&category=${this.category}`).then(r=>r.json());
+    const d: any = await firstValueFrom(
+      this.api.get(`/analytics/pnl/daily?symbol=${this.symbol}&exchange=${this.exchange}&category=${this.category}`)
+    );
     this.daily.set(d.daily || []);
-    const e = await fetch(`${(this.api as any).base}/analytics/equity/series?symbol=${this.symbol}&exchange=${this.exchange}&category=${this.category}`).then(r=>r.json());
+    const e: any = await firstValueFrom(
+      this.api.get(`/analytics/equity/series?symbol=${this.symbol}&exchange=${this.exchange}&category=${this.category}`)
+    );
     this.equity.set((e.series || []).map((x:any)=>({ ts:x.ts, equity:x.equity })));
   }
 }

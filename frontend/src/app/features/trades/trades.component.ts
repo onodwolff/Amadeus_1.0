@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -31,24 +33,24 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class TradesComponent {
+  api = inject(ApiService);
   symbol=''; exchange=''; category=''; strategy_id='';
   items = signal<any[]>([]);
   async load() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
     const params = new URLSearchParams();
     if (this.symbol) params.set('symbol', this.symbol);
     if (this.exchange) params.set('exchange', this.exchange);
     if (this.category) params.set('category', this.category);
     if (this.strategy_id) params.set('strategy_id', this.strategy_id);
-    this.items.set(await fetch(`${base}/trades/fills?${params.toString()}`).then(r=>r.json()).then(j=>j.items));
+    const r: any = await firstValueFrom(this.api.get(`/trades/fills?${params.toString()}`));
+    this.items.set(r.items);
   }
   csvUrl() {
-    const base = (window as any).__API__ || 'http://localhost:8000/api';
     const params = new URLSearchParams();
     if (this.symbol) params.set('symbol', this.symbol);
     if (this.exchange) params.set('exchange', this.exchange);
     if (this.category) params.set('category', this.category);
     if (this.strategy_id) params.set('strategy_id', this.strategy_id);
-    return `${base}/trades/realized.csv?${params.toString()}`;
+    return this.api.url(`/trades/realized.csv?${params.toString()}`);
   }
 }
