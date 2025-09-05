@@ -1,6 +1,9 @@
+"""HTTP endpoints exposing basic risk controls for the UI."""
+
 from fastapi import APIRouter
-from backend.core.risk import RISK_ENGINE
 from typing import Dict, Any
+
+from backend.core.risk import RISK_ENGINE
 
 router = APIRouter(prefix="/risk", tags=["risk"])
 

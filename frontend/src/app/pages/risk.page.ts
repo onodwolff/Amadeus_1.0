@@ -79,6 +79,7 @@ export class RiskPage {
   });
   loadingLimits = true;
 
+  /** Display a user-friendly error based on HTTP status codes */
   private handleError(action: string, err: any) {
     const status = err?.status;
     let msg = action;
