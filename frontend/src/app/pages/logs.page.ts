@@ -54,7 +54,11 @@ export class LogsPage {
 
   retry() {
     this.status = 'connecting';
-    this.ws.connect('logs');
+    const ws = this.ws.connect('logs');
+    if (!ws) {
+      this.status = 'error';
+      this.lines.push('Failed to connect to log stream.');
+    }
   }
 
   get filtered(): string[] {

@@ -25,7 +25,8 @@ export class LogsComponent {
     constructor(private ws: WsService, private zone: NgZone) {}
 
     ngOnInit() {
-        this.ws.connect();
+        const ws = this.ws.connect('logs');
+        if (!ws) this.zone.run(() => this.onEvent({ type: 'error' }));
         this.ws.stream$.subscribe((evt: any) => {
             this.zone.run(() => this.onEvent(evt));
         });
@@ -42,6 +43,18 @@ export class LogsComponent {
         else if (evt.type) { type = String(evt.type); }
 
         switch (type) {
+            case 'error':
+                type = 'diag';
+                text = 'Connection lost. Please retry.';
+                break;
+            case 'open':
+                type = 'diag';
+                text = 'Connected';
+                break;
+            case 'close':
+                type = 'diag';
+                text = 'WebSocket closed';
+                break;
             case 'status':
                 text = `running=${evt.running} equity=${evt.equity ?? ''} symbol=${evt.symbol ?? ''}`;
                 break;

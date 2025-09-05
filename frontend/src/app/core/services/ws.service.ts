@@ -25,7 +25,6 @@ export class WsService {
     const apiRoot = String(httpBase).replace(/\/$/, '');
     const derived =
       apiRoot
-        .replace(/^http/, 'ws')
         .replace(/\/api(?:\/.*)?$/, '') +
       '/api/ws';
     const wsBase = this.win.__WS__ || derived;
@@ -52,7 +51,8 @@ export class WsService {
     }
 
     const adj = channel ? '/' + String(channel).replace(/^\//, '') : '';
-    const url = this.baseUrl + adj;
+    const base = this.baseUrl.replace(/^http/, 'ws');
+    const url = base + adj;
 
     if (this.socket) {
       try { this.socket.close(); } catch {}
