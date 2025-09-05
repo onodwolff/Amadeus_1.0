@@ -1,7 +1,7 @@
 
 @use 'styles/themes/_tokens';
 
-@import '@primeng/themes/aura/theme.css';
+@import '@primeng/themes/aura';
 
 /* PrimeIcons */
 @import 'primeicons/primeicons.css';
@@ -9,7 +9,6 @@
 /* AG Grid Quartz */
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
-@import 'ag-grid-community/styles/ag-theme-quartz-dark.css';
 
 /* Base */
 html, body {
