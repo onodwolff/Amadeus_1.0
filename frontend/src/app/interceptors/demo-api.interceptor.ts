@@ -13,10 +13,21 @@ export const demoApiInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, nex
   const method = req.method.toUpperCase();
   const lag = 200;
 
-  if (method === 'GET' && url.endsWith('/status')) {
-    return of(json({ ok: true, running: true, ts: Date.now(), version: 'v0.1.0-demo' })).pipe(delay(lag));
-  }
-  if (method === 'POST' && url.endsWith('/start')) return of(json({ ok: true, started: true })).pipe(delay(lag));
+    if (method === 'GET' && url.endsWith('/status')) {
+      return of(json({ ok: true, running: true, ts: Date.now(), version: 'v0.1.0-demo' })).pipe(delay(lag));
+    }
+    if (method === 'GET' && url.endsWith('/dashboard/summary')) {
+      return of(json({
+        equity: 125000,
+        delta: 2.35,
+        pnl: 1432.12,
+        sharpe: 1.82,
+        strategies: 3,
+        open_orders: 12,
+        fill_ratio: 0.73,
+      })).pipe(delay(lag));
+    }
+    if (method === 'POST' && url.endsWith('/start')) return of(json({ ok: true, started: true })).pipe(delay(lag));
   if (method === 'POST' && url.endsWith('/stop'))  return of(json({ ok: true, stopped: true })).pipe(delay(lag));
   if (method === 'POST' && url.endsWith('/cmd'))   return of(json({ ok: true, result: 'ack' })).pipe(delay(lag));
 

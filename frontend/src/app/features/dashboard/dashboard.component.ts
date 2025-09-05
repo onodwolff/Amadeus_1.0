@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ApiService } from '../../core/services/api.service';
+
 @Component({
   standalone: true,
   selector: 'app-dashboard',
@@ -13,7 +15,37 @@ import { CommonModule } from '@angular/common';
   </div>
   `
 })
-export class DashboardComponent {
-  equity = signal(125000); delta = signal(2.35); pnl = signal(1432.12); sharpe = signal(1.82);
-  strategies = signal(3); openOrders = signal(12); fillRatio = signal(0.73);
+export class DashboardComponent implements OnInit {
+  private api = inject(ApiService);
+
+  equity = signal(0);
+  delta = signal(0);
+  pnl = signal(0);
+  sharpe = signal(0);
+  strategies = signal(0);
+  openOrders = signal(0);
+  fillRatio = signal(0);
+
+  async ngOnInit() {
+    let summary: any = {};
+    try {
+      summary = await this.api.getDashboardSummary();
+    } catch {
+      summary = {};
+    }
+    let status: any = {};
+    try {
+      status = await this.api.status();
+    } catch {
+      status = {};
+    }
+    const metrics = { ...summary, ...(status?.metrics || {}) };
+    this.equity.set(metrics.equity || 0);
+    this.delta.set(metrics.delta || 0);
+    this.pnl.set(metrics.pnl || 0);
+    this.sharpe.set(metrics.sharpe || 0);
+    this.strategies.set(metrics.strategies || metrics.strategy_count || 0);
+    this.openOrders.set(metrics.openOrders || metrics.open_orders || 0);
+    this.fillRatio.set(metrics.fillRatio || metrics.fill_ratio || 0);
+  }
 }

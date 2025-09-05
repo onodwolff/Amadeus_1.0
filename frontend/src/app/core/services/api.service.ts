@@ -45,7 +45,10 @@ export class ApiService {
   running$ = new BehaviorSubject<boolean>(false);
   setRunning(v: boolean) { this.running$.next(!!v); }
 
-  // status endpoint not available yet
+  status(): Promise<any> {
+    const url = this.url('/status');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
   start(body?: any) { return this.post('/start', body ?? {}); }
   stop()  { return this.post('/stop', {}); }
   cmd(command: string, payload: any = {}) { return this.post('/cmd', { cmd: command, ...payload }); }
@@ -56,6 +59,11 @@ export class ApiService {
   restoreConfig()     { return this.post('/config/restore', {}); }
 
   scan(body: any)     { return this.post('/scan', body); }
+
+  getDashboardSummary(): Promise<any> {
+    const url = this.url('/dashboard/summary');
+    return firstValueFrom(this.http.get(url, { headers: this.headers() }));
+  }
 
   // history and risk endpoints are disabled until backend support
 
