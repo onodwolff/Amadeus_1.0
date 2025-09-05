@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
   selector: 'page-dashboard',
   imports: [CommonModule],
   template: `
+    <p class="construction">Feature under construction</p>
     <div class="grid gap-4 lg:grid-cols-4">
       <div class="card p-4"><div class="text-xs text-[#9aa4ad]">Equity</div><div class="text-2xl font-semibold">$ {{ equity() | number:'1.0-0' }}</div></div>
       <div class="card p-4"><div class="text-xs text-[#9aa4ad]">PNL (today)</div><div class="text-2xl" [class.price-up]="pnl()>0" [class.price-down]="pnl()<0">{{ pnl() | number:'1.2-2' }}</div></div>

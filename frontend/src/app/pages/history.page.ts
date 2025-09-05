@@ -8,6 +8,7 @@ import { OrderHistoryItem, TradeHistoryItem } from '../models';
     imports: [CommonModule],
     template: `
         <h1>History</h1>
+        <p class="construction">Feature under construction</p>
 
         <div class="section">
             <h2>Orders</h2>
