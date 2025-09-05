@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WsService } from '../core/services/ws.service';
+import { ApiService } from '../core/services/api.service';
 
 @Component({
   selector: 'app-logs',
@@ -28,9 +29,26 @@ export class LogsPage {
   filter = '';
   status = 'disconnected';
 
-  constructor(private ws: WsService) {}
+  constructor(private ws: WsService, private api: ApiService) {}
 
   ngOnInit() {
+    this.api.cmd('logs').subscribe({
+      next: (res: any) => {
+        const arr = Array.isArray(res?.logs)
+          ? res.logs
+          : typeof res === 'string'
+            ? [res]
+            : [];
+        if (arr.length) {
+          this.lines.push(...arr.map((l: any) => String(l)));
+          setTimeout(() => this.scrollBottom());
+        }
+      },
+      error: () => {
+        this.lines.push('Failed to load logs.');
+        setTimeout(() => this.scrollBottom());
+      }
+    });
     this.ws.messages$.subscribe(msg => {
       if (msg?.type === 'error') {
         const line = msg.message || 'WebSocket error';
