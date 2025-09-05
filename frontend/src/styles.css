@@ -3,7 +3,6 @@
 /* AG Grid Quartz */
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
-@import 'ag-grid-community/styles/ag-theme-quartz-dark.css';
 :root {
   --bg-0:#0f1115;
   --bg-1:#141821;
