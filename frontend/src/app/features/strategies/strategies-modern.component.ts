@@ -2,8 +2,8 @@ import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PrimeNgModule } from '../../prime-ng.module';
-import { ToastService } from '../../shared/ui/toast.service';
 import { ApiService } from '../../core/services/api.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
@@ -60,7 +60,7 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class StrategiesModernComponent implements OnInit {
   private api = inject(ApiService);
-  private toast = inject(ToastService);
+  private messageService = inject(MessageService);
   private router = inject(Router);
 
   @Output() create = new EventEmitter<void>();
@@ -110,7 +110,10 @@ export class StrategiesModernComponent implements OnInit {
       );
       this.items.set(list);
     } catch (err: any) {
-      this.toast.push(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({
+        severity: 'error',
+        summary: `Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`
+      });
     }
   }
 

@@ -5,7 +5,7 @@ import { StrategiesModernComponent } from '../features/strategies/strategies-mod
 import { JsonSchemaFormComponent } from '../shared/ui/json-schema-form.component';
 import { ApiService } from '../core/services/api.service';
 import { PrimeNgModule } from '../prime-ng.module';
-import { ToastService } from '../shared/ui/toast.service';
+import { MessageService } from 'primeng/api';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -59,7 +59,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class StrategiesPage {
   private api = inject(ApiService);
-  private toast = inject(ToastService);
+  private messageService = inject(MessageService);
   @ViewChild('list') private list?: StrategiesModernComponent;
 
   openCreate = false;
@@ -105,7 +105,10 @@ export class StrategiesPage {
       this.cfg = res.config || {};
       this.riskPolicy = res.risk_policy || this.riskPolicy;
     } catch (err: any) {
-      this.toast.push(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({
+        severity: 'error',
+        summary: `Load failed: ${err?.error?.error || err?.message || 'unknown'}`
+      });
     }
   }
 
@@ -114,7 +117,10 @@ export class StrategiesPage {
       await firstValueFrom(this.api.delete(`/strategies/${id}`));
       await this.list?.refresh();
     } catch (err: any) {
-      this.toast.push(`Delete failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({
+        severity: 'error',
+        summary: `Delete failed: ${err?.error?.error || err?.message || 'unknown'}`
+      });
     }
   }
 
@@ -151,7 +157,10 @@ export class StrategiesPage {
       this.editing = false;
       await this.list?.refresh();
     } catch (err: any) {
-      this.toast.push(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({
+        severity: 'error',
+        summary: `Save failed: ${err?.error?.error || err?.message || 'unknown'}`
+      });
     }
   }
 
@@ -191,7 +200,10 @@ export class StrategiesPage {
       this.importedCfg = {};
       await this.list?.refresh();
     } catch (err: any) {
-      this.toast.push(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({
+        severity: 'error',
+        summary: `Save failed: ${err?.error?.error || err?.message || 'unknown'}`
+      });
     }
   }
 
@@ -199,15 +211,18 @@ export class StrategiesPage {
     try {
       this.riskPolicies = await this.api.getRiskPolicies();
       if (!this.riskPolicies.length) {
-        this.toast.push('No risk policies found', 'info');
+        this.messageService.add({ severity: 'info', summary: 'No risk policies found' });
       }
     } catch (err: any) {
       if (err?.status === 404) {
         this.riskPolicies = [];
-        this.toast.push('No risk policies found', 'info');
+        this.messageService.add({ severity: 'info', summary: 'No risk policies found' });
       } else {
         this.riskPolicies = [];
-        this.toast.push(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+        this.messageService.add({
+          severity: 'error',
+          summary: `Load failed: ${err?.error?.error || err?.message || 'unknown'}`
+        });
       }
     }
     if (!this.riskPolicy && this.riskPolicies.length) {

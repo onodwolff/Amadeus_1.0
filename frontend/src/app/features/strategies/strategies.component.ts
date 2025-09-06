@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { JsonSchemaFormComponent } from '../../shared/json-schema-form.component';
 import { ApiService } from '../../core/services/api.service';
 import { firstValueFrom } from 'rxjs';
+import { MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
@@ -74,6 +75,7 @@ export class StrategiesComponent {
   cfg: any = {};
   schema = signal<any>({type:'object', properties:{}});
   api = inject(ApiService);
+  msg = inject(MessageService);
   exchange = 'mock';
   symbol = '';
 
@@ -134,7 +136,10 @@ export class StrategiesComponent {
       await this.refresh();
     } catch (err:any) {
       console.error('Failed to start strategy', err);
-      alert(err?.error?.error || err?.message || 'Failed to start strategy');
+      this.msg.add({
+        severity: 'error',
+        summary: err?.error?.error || err?.message || 'Failed to start strategy'
+      });
     }
   }
 }
