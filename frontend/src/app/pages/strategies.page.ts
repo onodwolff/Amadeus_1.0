@@ -17,11 +17,11 @@ import { firstValueFrom } from 'rxjs';
       <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" (edit)="onEdit($event)" (remove)="onRemove($event)" #list></app-strategies-modern>
     </div>
 
-    <div *ngIf="openCreate" class="fixed inset-0 bg-black/50 grid place-items-center">
-      <div class="bg-white rounded p-4 w-[700px] max-w-[95vw]">
+    <div *ngIf="openCreate" class="fixed inset-0 grid place-items-center">
+      <div class="rounded p-4 w-[700px] max-w-[95vw]">
         <div class="flex items-center justify-between mb-3">
           <div class="font-medium">{{ editing ? 'Edit Strategy' : 'Create Strategy' }}</div>
-          <button class="text-sm" (click)="openCreate=false; editing=false">✕</button>
+          <p-button label="Close" (onClick)="openCreate=false; editing=false" text></p-button>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -40,18 +40,18 @@ import { firstValueFrom } from 'rxjs';
             <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
           </div>
           <div class="col-span-2 mt-2 flex gap-2">
-            <button class="btn primary" (click)="submitSave()">Save</button>
-            <button class="btn" (click)="openCreate=false; editing=false">Cancel</button>
+            <p-button label="Save" (onClick)="submitSave()" severity="primary"></p-button>
+            <p-button label="Cancel" (onClick)="openCreate=false; editing=false"></p-button>
           </div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="openImport" class="fixed inset-0 bg-black/50 grid place-items-center">
-      <div class="bg-white rounded p-4 w-[500px] max-w-[95vw]">
+    <div *ngIf="openImport" class="fixed inset-0 grid place-items-center">
+      <div class="rounded p-4 w-[500px] max-w-[95vw]">
         <div class="flex items-center justify-between mb-3">
           <div class="font-medium">Import Strategy Config</div>
-          <button class="text-sm" (click)="openImport=false">✕</button>
+          <p-button label="Close" (onClick)="openImport=false" text></p-button>
         </div>
         <div class="grid gap-3">
           <div>
@@ -64,8 +64,8 @@ import { firstValueFrom } from 'rxjs';
             <input type="file" accept="application/json" (change)="onFile($event)">
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="btn primary" (click)="submitImport()">Save</button>
-            <button class="btn" (click)="openImport=false">Cancel</button>
+            <p-button label="Save" (onClick)="submitImport()" severity="primary"></p-button>
+            <p-button label="Cancel" (onClick)="openImport=false"></p-button>
           </div>
         </div>
       </div>

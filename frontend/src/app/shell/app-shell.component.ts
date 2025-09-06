@@ -2,30 +2,31 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { RouterLinkActive } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   standalone: true,
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive, ButtonModule],
   template: `
   <div class="min-h-screen grid grid-cols-[240px_1fr]">
-    <aside class="bg-[#0d1116] border-r border-[#1b2026] p-3">
+    <aside class="border-r p-3">
       <div class="flex items-center gap-2 mb-6 px-1">
-        <button class="btn" (click)="collapsed = !collapsed">☰</button>
-        <div class="text-sm text-[#9aa4ad]" *ngIf="!collapsed">Amadeus</div>
+        <p-button label="☰" (onClick)="collapsed = !collapsed"></p-button>
+        <div class="text-sm" *ngIf="!collapsed">Amadeus</div>
       </div>
       <nav class="flex flex-col gap-1">
-        <a routerLink="/dashboard" routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">🏠 <span *ngIf="!collapsed">Dashboard</span></a>
-        <a routerLink="/market" routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">📈 <span *ngIf="!collapsed">Market</span></a>
-        <a routerLink="/strategies" routerLinkActive="bg-[#151a20]" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#141820]">🤖 <span *ngIf="!collapsed">Strategies</span></a>
+        <a routerLink="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-xl">🏠 <span *ngIf="!collapsed">Dashboard</span></a>
+        <a routerLink="/market" class="flex items-center gap-3 px-3 py-2 rounded-xl">📈 <span *ngIf="!collapsed">Market</span></a>
+        <a routerLink="/strategies" class="flex items-center gap-3 px-3 py-2 rounded-xl">🤖 <span *ngIf="!collapsed">Strategies</span></a>
       </nav>
     </aside>
 
     <main>
-      <header class="flex items-center justify-between px-4 h-14 border-b border-[#1b2026] bg-[#0d1116]">
-        <div class="text-sm text-[#9aa4ad]">v17 UI</div>
+      <header class="flex items-center justify-between px-4 h-14 border-b">
+        <div class="text-sm">v17 UI</div>
         <div class="flex items-center gap-2">
-          <button class="btn" (click)="toggleTheme()" title="Toggle theme">Dark</button>
+          <p-button label="Dark" (onClick)="toggleTheme()" title="Toggle theme"></p-button>
         </div>
       </header>
       <section class="p-4">

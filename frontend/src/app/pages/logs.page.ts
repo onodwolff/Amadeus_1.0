@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { Subscription } from 'rxjs';
 import { WsService } from '../core/services/ws.service';
 import { ApiService } from '../core/services/api.service';
@@ -9,20 +11,20 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ButtonModule, CardModule],
   template: `
     <h1>Logs</h1>
     <div class="status" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
       <span>Connection: {{ status }}</span>
-      <button *ngIf="status !== 'connected'" type="button" (click)="retry()">Retry</button>
+      <p-button *ngIf="status !== 'connected'" type="button" (onClick)="retry()" label="Retry"></p-button>
     </div>
-    <div class="card" style="padding:12px;margin-top:8px;">
+    <p-card class="mt-2 p-3">
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <input [(ngModel)]="filter" placeholder="Filter"/>
-        <button type="button" (click)="clear()">Clear</button>
+        <p-button type="button" (onClick)="clear()" label="Clear"></p-button>
       </div>
       <pre #pane style="max-height:400px;overflow:auto;">{{ filtered.join('\n') }}</pre>
-    </div>
+    </p-card>
   `
 })
 export class LogsPage {

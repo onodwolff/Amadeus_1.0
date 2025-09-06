@@ -1,38 +1,38 @@
 <p-toast></p-toast>
 
 <section class="mx-auto max-w-6xl p-4 space-y-4">
-  <div class="card">
-    <div class="card-header">
-      <div class="flex items-center gap-2">
-        <i class="pi pi-table"></i>
-        <span class="uppercase">Dashboard</span>
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-table"></i>
+          <span class="uppercase">Dashboard</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input pInputText placeholder="Search..." />
+          <p-button label="Ping UI" icon="pi pi-check" (onClick)="ping()" severity="primary"></p-button>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <input pInputText placeholder="Search..." class="px-3 py-1 rounded-lg bg-[#0f141a] border border-tvborder" />
-        <button pButton label="Ping UI" icon="pi pi-check" (click)="ping()" class="btn primary"></button>
-      </div>
-    </div>
-    <div class="card-body">
-      <p-table [value]="rows" styleClass="p-datatable-sm">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Symbol</th>
-            <th>Last Price</th>
-            <th>24h Volume</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-r>
-          <tr>
-            <td>{{ r.symbol }}</td>
-            <td>{{ r.price | number:'1.2-2' }}</td>
-            <td>{{ r.vol24h }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-  </div>
+    </ng-template>
+    <p-table [value]="rows" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Symbol</th>
+          <th>Last Price</th>
+          <th>24h Volume</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-r>
+        <tr>
+          <td>{{ r.symbol }}</td>
+          <td>{{ r.price | number:'1.2-2' }}</td>
+          <td>{{ r.vol24h }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
 
-  <div class="rounded-xl border border-tvborder p-3 text-tvmuted">
-    <span class="badge">Tailwind v4 tokens live</span>
+  <div class="p-3">
+    <p-badge value="Tailwind v4 tokens live"></p-badge>
   </div>
 </section>

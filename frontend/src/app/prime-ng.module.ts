@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
+import { BadgeModule } from 'primeng/badge';
 
 @NgModule({
   exports: [
@@ -13,7 +14,8 @@ import { ToastModule } from 'primeng/toast';
     TableModule,
     DropdownModule,
     DialogModule,
-    ToastModule
+    ToastModule,
+    BadgeModule
   ]
 })
 export class PrimeNgModule {}

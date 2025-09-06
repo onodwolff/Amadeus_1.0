@@ -1,17 +1,18 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
 import { ApiService } from '../core/services/api.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ButtonModule],
   template: `
     <div class="p-4">
       <div class="flex justify-between mb-3">
         <h1 class="text-lg font-medium">Bots</h1>
-        <button class="btn primary" (click)="openAdd=true">Add Bot</button>
+        <p-button label="Add Bot" (onClick)="openAdd=true" severity="primary"></p-button>
       </div>
       <table class="tbl w-full">
         <tr>
@@ -28,16 +29,16 @@ import { ApiService } from '../core/services/api.service';
           <td>{{ b.exchange }}</td>
           <td>{{ b.symbol }}</td>
           <td>{{ b.risk_profile }}</td>
-          <td><button class="btn" (click)="stop(b.id)">Stop</button></td>
-        </tr>
+          <td><p-button label="Stop" (onClick)="stop(b.id)"></p-button></td>
+      </tr>
       </table>
     </div>
 
-    <div *ngIf="openAdd" class="fixed inset-0 bg-black/50 grid place-items-center">
-      <div class="bg-white rounded p-4 w-[400px] max-w-[95vw]">
+    <div *ngIf="openAdd" class="fixed inset-0 grid place-items-center">
+      <div class="rounded p-4 w-[400px] max-w-[95vw]">
         <div class="flex items-center justify-between mb-3">
           <div class="font-medium">Add Bot</div>
-          <button class="text-sm" (click)="openAdd=false">✕</button>
+          <p-button label="Close" (onClick)="openAdd=false" text></p-button>
         </div>
         <div class="grid gap-3">
           <div>
@@ -59,8 +60,8 @@ import { ApiService } from '../core/services/api.service';
             <input class="border rounded p-2 w-full" [(ngModel)]="risk" />
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="btn primary" (click)="start()">Start</button>
-            <button class="btn" (click)="openAdd=false">Cancel</button>
+            <p-button label="Start" (onClick)="start()" severity="primary"></p-button>
+            <p-button label="Cancel" (onClick)="openAdd=false"></p-button>
           </div>
         </div>
       </div>
