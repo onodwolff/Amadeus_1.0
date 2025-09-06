@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PrimeNgModule } from '../prime-ng.module';
-import { ToastService } from '../shared/ui/toast.service';
 import { ApiService } from '../core/services/api.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
@@ -28,7 +28,7 @@ export class StrategiesComponent implements OnInit {
   exchange = 'mock';
   symbol = '';
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  constructor(private api: ApiService, private messageService: MessageService) {}
 
   async ngOnInit() {
     await this.loadStrategies();
@@ -41,7 +41,7 @@ export class StrategiesComponent implements OnInit {
         this.sid = this.strategies[0].id;
       }
     } catch (err: any) {
-      this.toast.push(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({ severity: 'error', summary: `Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}` });
     }
   }
 
@@ -54,7 +54,7 @@ export class StrategiesComponent implements OnInit {
       });
       await this.loadStrategies();
     } catch (err: any) {
-      this.toast.push(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({ severity: 'error', summary: `Start failed: ${err?.error?.error || err?.message || 'unknown'}` });
     }
   }
 
@@ -71,10 +71,10 @@ export class StrategiesComponent implements OnInit {
         await this.api.stopBot(bot.id);
         await this.loadStrategies();
       } else {
-        this.toast.push('Bot not found', 'error');
+        this.messageService.add({ severity: 'error', summary: 'Bot not found' });
       }
     } catch (err: any) {
-      this.toast.push(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
+      this.messageService.add({ severity: 'error', summary: `Stop failed: ${err?.error?.error || err?.message || 'unknown'}` });
     }
   }
 }
