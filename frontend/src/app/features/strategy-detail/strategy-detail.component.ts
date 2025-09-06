@@ -69,18 +69,26 @@ export class StrategyDetailComponent {
   }
 
   async load() {
+    let errMsg: string | null = null;
     try {
-      const [rep, fills] = await Promise.all([
-        this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol),
-        this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol),
-      ]);
+      const rep = await this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol);
       this.rep.set(rep.report);
-      this.fills.set(fills.items);
-      this.error.set(null);
     } catch (e) {
       console.error('Failed to load strategy report', e);
-      this.error.set('Report not available');
+      this.rep.set({});
+      errMsg = 'Report not available';
     }
+
+    try {
+      const fills = await this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol);
+      this.fills.set(fills.items);
+    } catch (e) {
+      console.error('Failed to load strategy fills', e);
+      this.fills.set([]);
+      errMsg = errMsg ? errMsg + '; fills not available' : 'Fills not available';
+    }
+
+    this.error.set(errMsg);
   }
 
   csvUrl() {
