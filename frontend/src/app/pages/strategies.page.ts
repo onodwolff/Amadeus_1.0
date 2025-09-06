@@ -6,6 +6,7 @@ import { JsonSchemaFormComponent } from '../shared/ui/json-schema-form.component
 import { ApiService } from '../core/services/api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppMaterialModule } from '../app.module';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-strategies',
@@ -13,14 +14,14 @@ import { AppMaterialModule } from '../app.module';
   imports: [CommonModule, FormsModule, StrategiesModernComponent, JsonSchemaFormComponent, AppMaterialModule],
   template: `
     <div class="p-4">
-      <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" #list></app-strategies-modern>
+      <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" (edit)="onEdit($event)" (remove)="onRemove($event)" #list></app-strategies-modern>
     </div>
 
     <div *ngIf="openCreate" class="fixed inset-0 bg-black/50 grid place-items-center">
       <div class="bg-white rounded p-4 w-[700px] max-w-[95vw]">
         <div class="flex items-center justify-between mb-3">
-          <div class="font-medium">Create Strategy</div>
-          <button class="text-sm" (click)="openCreate=false">✕</button>
+          <div class="font-medium">{{ editing ? 'Edit Strategy' : 'Create Strategy' }}</div>
+          <button class="text-sm" (click)="openCreate=false; editing=false">✕</button>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -33,8 +34,8 @@ import { AppMaterialModule } from '../app.module';
             <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
           </div>
           <div class="col-span-2 mt-2 flex gap-2">
-            <button class="btn primary" (click)="submitCreate()">Create & Start</button>
-            <button class="btn" (click)="openCreate=false">Cancel</button>
+            <button class="btn primary" (click)="submitSave()">Save</button>
+            <button class="btn" (click)="openCreate=false; editing=false">Cancel</button>
           </div>
         </div>
       </div>
@@ -57,7 +58,7 @@ import { AppMaterialModule } from '../app.module';
             <input type="file" accept="application/json" (change)="onFile($event)">
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="btn primary" (click)="submitImport()">Start</button>
+            <button class="btn primary" (click)="submitImport()">Save</button>
             <button class="btn" (click)="openImport=false">Cancel</button>
           </div>
         </div>
@@ -72,6 +73,7 @@ export class StrategiesPage {
 
   openCreate = false;
   openImport = false;
+  editing = false;
 
   strategies: {id: string; running: boolean}[] = [];
   sid = '';
@@ -80,6 +82,8 @@ export class StrategiesPage {
   importedCfg: any = {};
 
   async onCreate() {
+    this.editing = false;
+    this.cfg = {};
     this.openCreate = true;
     await this.loadStrategies();
     await this.loadSchema();
@@ -88,6 +92,28 @@ export class StrategiesPage {
   async onImport() {
     this.openImport = true;
     await this.loadStrategies();
+  }
+
+  async onEdit(id: string) {
+    this.editing = true;
+    this.sid = id;
+    this.openCreate = true;
+    await this.loadStrategies();
+    await this.loadSchema();
+    try {
+      this.cfg = await firstValueFrom(this.api.get(`/strategies/${id}`));
+    } catch (err: any) {
+      this.snack.open(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
+  }
+
+  async onRemove(id: string) {
+    try {
+      await firstValueFrom(this.api.delete(`/strategies/${id}`));
+      await this.list?.refresh();
+    } catch (err: any) {
+      this.snack.open(`Delete failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
   }
 
   private async loadStrategies() {
@@ -103,13 +129,14 @@ export class StrategiesPage {
     this.cfg = {};
   }
 
-  async submitCreate() {
+  async submitSave() {
     try {
-      await this.api.startStrategy(this.sid, this.cfg);
+      await firstValueFrom(this.api.put(`/strategies/${this.sid}`, this.cfg));
       this.openCreate = false;
+      this.editing = false;
       await this.list?.refresh();
     } catch (err: any) {
-      this.snack.open(`Create failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.snack.open(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }
   }
 
@@ -129,12 +156,12 @@ export class StrategiesPage {
 
   async submitImport() {
     try {
-      await this.api.startStrategy(this.sid, this.importedCfg || {});
+      await firstValueFrom(this.api.put(`/strategies/${this.sid}`, this.importedCfg || {}));
       this.openImport = false;
       this.importedCfg = {};
       await this.list?.refresh();
     } catch (err: any) {
-      this.snack.open(`Import failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.snack.open(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }
   }
 }
