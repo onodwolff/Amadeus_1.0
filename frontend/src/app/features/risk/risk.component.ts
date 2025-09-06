@@ -18,11 +18,11 @@ import { ToastService } from '../../shared/ui/toast.service';
         <div class="grid grid-cols-2 gap-2">
           <p-dropdown [options]="strategies" optionLabel="id" optionValue="id" [(ngModel)]="sid"></p-dropdown>
           <p-button label="Load" (onClick)="load()" severity="secondary"></p-button>
-          <label>max_active_orders</label><input type="number" class="border rounded p-2" [(ngModel)]="pol.max_active_orders">
-          <label>max_dd</label><input type="number" step="0.01" class="border rounded p-2" [(ngModel)]="pol.max_dd">
-          <label>max_leverage</label><input type="number" class="border rounded p-2" [(ngModel)]="pol.max_leverage">
-          <label>max_notional_per_symbol.BTCUSDT</label><input type="number" class="border rounded p-2" [(ngModel)]="pol.max_notional_per_symbol.BTCUSDT">
-          <label>max_pos_qty_per_symbol.BTCUSDT</label><input type="number" step="0.0001" class="border rounded p-2" [(ngModel)]="pol.max_pos_qty_per_symbol.BTCUSDT">
+          <label>max_active_orders</label><p-inputNumber [(ngModel)]="pol.max_active_orders"></p-inputNumber>
+          <label>max_dd</label><p-inputNumber [(ngModel)]="pol.max_dd" [step]="0.01"></p-inputNumber>
+          <label>max_leverage</label><p-inputNumber [(ngModel)]="pol.max_leverage"></p-inputNumber>
+          <label>max_notional_per_symbol.BTCUSDT</label><p-inputNumber [(ngModel)]="pol.max_notional_per_symbol.BTCUSDT"></p-inputNumber>
+          <label>max_pos_qty_per_symbol.BTCUSDT</label><p-inputNumber [(ngModel)]="pol.max_pos_qty_per_symbol.BTCUSDT" [step]="0.0001"></p-inputNumber>
           <div class="col-span-2">
             <p-button label="Save" (onClick)="save()" severity="primary"></p-button>
           </div>

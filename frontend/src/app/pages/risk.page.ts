@@ -30,9 +30,7 @@ import { ToastService } from '../shared/ui/toast.service';
       <ng-container *ngIf="!loadingPolicies">
         <form [formGroup]="policiesForm">
           <label>Risk policy
-            <select formControlName="policy">
-              <option *ngFor="let p of policies" [value]="p">{{ p }}</option>
-            </select>
+            <p-dropdown formControlName="policy" [options]="policies.map(p => ({label:p, value:p}))"></p-dropdown>
           </label>
         </form>
         <div class="muted" *ngIf="!policies.length">Политики не найдены</div>
@@ -48,28 +46,28 @@ import { ToastService } from '../shared/ui/toast.service';
         <div *ngIf="!loadingLimits">
           <div class="grid">
             <label>Max drawdown %
-              <input type="number" formControlName="max_drawdown_pct" />
+              <p-inputNumber formControlName="max_drawdown_pct"></p-inputNumber>
             </label>
             <label>DD window sec
-              <input type="number" formControlName="dd_window_sec" />
+              <p-inputNumber formControlName="dd_window_sec"></p-inputNumber>
             </label>
             <label>Stop duration sec
-              <input type="number" formControlName="stop_duration_sec" />
+              <p-inputNumber formControlName="stop_duration_sec"></p-inputNumber>
             </label>
             <label>Cooldown sec
-              <input type="number" formControlName="cooldown_sec" />
+              <p-inputNumber formControlName="cooldown_sec"></p-inputNumber>
             </label>
             <label>Min trades for DD
-              <input type="number" formControlName="min_trades_for_dd" />
+              <p-inputNumber formControlName="min_trades_for_dd"></p-inputNumber>
             </label>
             <label>Max base ratio
-              <input type="number" formControlName="max_base_ratio" />
+              <p-inputNumber formControlName="max_base_ratio"></p-inputNumber>
             </label>
             <label>Max loss %
-              <input type="number" formControlName="max_loss_pct" />
+              <p-inputNumber formControlName="max_loss_pct"></p-inputNumber>
             </label>
             <label>Max loss USD
-              <input type="number" formControlName="max_loss_usd" />
+              <p-inputNumber formControlName="max_loss_usd"></p-inputNumber>
             </label>
           </div>
           <p-button label="Сохранить" type="submit" [disabled]="loadingLimits" severity="primary"></p-button>

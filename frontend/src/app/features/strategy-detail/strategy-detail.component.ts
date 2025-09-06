@@ -2,21 +2,22 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { PrimeNgModule } from '../../prime-ng.module';
 
 @Component({
   standalone: true,
   selector: 'app-strategy-detail',
-  imports: [CommonModule],
+  imports: [CommonModule, PrimeNgModule],
   template: `
   <div class="p-4">
     <div class="flex items-center justify-between">
       <h2 class="text-xl font-semibold">Strategy: {{ sid }}</h2>
-      <a class="px-3 py-2 rounded bg-black text-white" [href]="csvUrl()" target="_blank">Download CSV</a>
+      <p-button label="Download CSV" [link]="true" [href]="csvUrl()" target="_blank" severity="secondary"></p-button>
     </div>
     @if (error()) {
       <div class="mt-4 flex items-center gap-2">
         <div class="text-yellow-600">{{ error() }}</div>
-        <button class="px-3 py-2 rounded bg-black text-white" (click)="load()">Retry</button>
+        <p-button label="Retry" (onClick)="load()" severity="primary"></p-button>
       </div>
     }
     <div class="grid md:grid-cols-2 gap-6 mt-4">
@@ -34,14 +35,14 @@ import { ApiService } from '../../core/services/api.service';
         </div>
         <div class="mt-4 border rounded p-3">
           <div class="font-medium mb-2">Last Fills</div>
-          <table class="w-full text-sm">
-            <thead><tr class="text-left"><th>Time</th><th>Side</th><th>Qty</th><th>Price</th></tr></thead>
-            <tbody>
-              @for (f of fills(); track f.ts) {
-                <tr><td>{{ f.ts }}</td><td>{{ f.side }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td></tr>
-              }
-            </tbody>
-          </table>
+          <p-table [value]="fills()" class="w-full text-sm">
+            <ng-template pTemplate="header">
+              <tr class="text-left"><th>Time</th><th>Side</th><th>Qty</th><th>Price</th></tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-f>
+              <tr><td>{{ f.ts }}</td><td>{{ f.side }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td></tr>
+            </ng-template>
+          </p-table>
         </div>
       </div>
       <div>

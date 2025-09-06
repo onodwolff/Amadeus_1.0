@@ -1,27 +1,27 @@
 <div class="logs">
     <div class="pane" #pane>
-        <table class="tbl">
-            <thead>
-            <tr>
-                <th style="width:120px;">Время</th>
-                <th style="width:110px;">Тип</th>
-                <th>Сообщение</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let r of rows">
-                <td class="mono">{{ r.ts | date:'mediumTime' }}</td>
-                <td class="mono type"
-                    [class.type-status]="r.type==='status'"
-                    [class.type-diag]="r.type==='diag'"
-                    [class.type-stats]="r.type==='stats'"
-                    [class.type-order]="r.type==='order_event'"
-                    [class.type-trade]="r.type==='trade'">
-                    {{ r.type }}
-                </td>
-                <td class="txt">{{ r.text }}</td>
-            </tr>
-            </tbody>
-        </table>
+        <p-table [value]="rows" styleClass="tbl">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:120px;">Время</th>
+                    <th style="width:110px;">Тип</th>
+                    <th>Сообщение</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-r>
+                <tr>
+                    <td class="mono">{{ r.ts | date:'mediumTime' }}</td>
+                    <td class="mono type"
+                        [class.type-status]="r.type==='status'"
+                        [class.type-diag]="r.type==='diag'"
+                        [class.type-stats]="r.type==='stats'"
+                        [class.type-order]="r.type==='order_event'"
+                        [class.type-trade]="r.type==='trade'">
+                        {{ r.type }}
+                    </td>
+                    <td class="txt">{{ r.text }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 </div>

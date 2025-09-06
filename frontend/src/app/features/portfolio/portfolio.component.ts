@@ -2,36 +2,37 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { WsService } from '../../core/services/ws.service';
+import { PrimeNgModule } from '../../prime-ng.module';
 
 @Component({
   standalone: true,
   selector: 'app-portfolio',
-  imports: [CommonModule],
+  imports: [CommonModule, PrimeNgModule],
   template: `
   <div class="p-4">
     <h2 class="text-xl font-semibold mb-4">Portfolio</h2>
     <div class="grid md:grid-cols-2 gap-6">
       <div>
         <h3 class="font-medium mb-2">Balances</h3>
-        <table class="min-w-full text-sm">
-          <thead><tr class="text-left text-gray-500"><th>Asset</th><th>Free</th><th>Locked</th></tr></thead>
-          <tbody>
-            @for (b of balances(); track b.id) {
-              <tr class="border-t"><td>{{ b.asset }}</td><td>{{ b.free }}</td><td>{{ b.locked }}</td></tr>
-            }
-          </tbody>
-        </table>
+        <p-table [value]="balances()" class="min-w-full text-sm">
+          <ng-template pTemplate="header">
+            <tr class="text-left text-gray-500"><th>Asset</th><th>Free</th><th>Locked</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-b>
+            <tr class="border-t"><td>{{ b.asset }}</td><td>{{ b.free }}</td><td>{{ b.locked }}</td></tr>
+          </ng-template>
+        </p-table>
       </div>
       <div>
         <h3 class="font-medium mb-2">Positions</h3>
-        <table class="min-w-full text-sm">
-          <thead><tr class="text-left text-gray-500"><th>Symbol</th><th>Qty</th><th>Avg Price</th></tr></thead>
-          <tbody>
-            @for (p of positions(); track p.id) {
-              <tr class="border-t"><td>{{ p.symbol }}</td><td>{{ p.qty }}</td><td>{{ p.avg_price }}</td></tr>
-            }
-          </tbody>
-        </table>
+        <p-table [value]="positions()" class="min-w-full text-sm">
+          <ng-template pTemplate="header">
+            <tr class="text-left text-gray-500"><th>Symbol</th><th>Qty</th><th>Avg Price</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-p>
+            <tr class="border-t"><td>{{ p.symbol }}</td><td>{{ p.qty }}</td><td>{{ p.avg_price }}</td></tr>
+          </ng-template>
+        </p-table>
       </div>
     </div>
 

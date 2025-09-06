@@ -45,15 +45,15 @@ import { PrimeNgModule } from '../prime-ng.module';
         </div>
         <div>
           <label class="block text-sm mb-1">Exchange</label>
-          <input class="border rounded p-2 w-full" [(ngModel)]="exchange" />
+          <input pInputText class="w-full" [(ngModel)]="exchange" />
         </div>
         <div>
           <label class="block text-sm mb-1">Symbol</label>
-          <input class="border rounded p-2 w-full" [(ngModel)]="symbol" />
+          <input pInputText class="w-full" [(ngModel)]="symbol" />
         </div>
         <div>
           <label class="block text-sm mb-1">Risk Profile</label>
-          <input class="border rounded p-2 w-full" [(ngModel)]="risk" />
+          <input pInputText class="w-full" [(ngModel)]="risk" />
         </div>
         <div class="flex gap-2 mt-2">
           <p-button label="Start" (onClick)="start()" severity="primary"></p-button>

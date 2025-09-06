@@ -6,16 +6,17 @@ import { JsonSchemaFormComponent } from '../../shared/json-schema-form.component
 import { ApiService } from '../../core/services/api.service';
 import { firstValueFrom } from 'rxjs';
 import { MessageService } from 'primeng/api';
+import { PrimeNgModule } from '../../prime-ng.module';
 
 @Component({
   standalone: true,
   selector: 'app-strategies',
-  imports: [CommonModule, FormsModule, RouterLink, JsonSchemaFormComponent],
+  imports: [CommonModule, FormsModule, RouterLink, JsonSchemaFormComponent, PrimeNgModule],
   template: `
   <div class="p-4">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-semibold">Strategies</h2>
-      <button class="px-3 py-2 rounded bg-black text-white" (click)="openCreate=true">Create</button>
+      <p-button label="Create" (onClick)="openCreate=true" severity="primary"></p-button>
     </div>
 
     <div class="grid md:grid-cols-3 gap-4">
@@ -36,31 +37,27 @@ import { MessageService } from 'primeng/api';
       <div class="bg-white rounded p-4 w-[700px] max-w-[95vw]">
         <div class="flex items-center justify-between mb-3">
           <div class="font-medium">Create Strategy</div>
-          <button class="text-sm" (click)="openCreate=false">✕</button>
+          <p-button label="✕" (onClick)="openCreate=false" text></p-button>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm mb-1">Strategy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="sid" (ngModelChange)="loadSchema()">
-              @for (s of list(); track s.id) {
-                <option [value]="s.id">{{ s.id }}</option>
-              }
-            </select>
+            <p-dropdown class="w-full" [options]="list()" optionLabel="id" optionValue="id" [(ngModel)]="sid" (onChange)="loadSchema()"></p-dropdown>
           </div>
           <div>
             <label class="block text-sm mb-1">Exchange</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="exchange" />
+            <input pInputText class="w-full" [(ngModel)]="exchange" />
           </div>
           <div>
             <label class="block text-sm mb-1">Symbol</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="symbol" />
+            <input pInputText class="w-full" [(ngModel)]="symbol" />
           </div>
           <div class="col-span-2">
             <app-json-schema-form [schema]="schema()" [(model)]="cfg"></app-json-schema-form>
           </div>
           <div class="col-span-2 mt-2 flex gap-2">
-            <button class="px-3 py-2 rounded bg-black text-white" (click)="create()">Create & Start</button>
-            <button class="px-3 py-2 rounded" (click)="openCreate=false">Cancel</button>
+            <p-button label="Create & Start" (onClick)="create()" severity="primary"></p-button>
+            <p-button label="Cancel" (onClick)="openCreate=false"></p-button>
           </div>
         </div>
       </div>
