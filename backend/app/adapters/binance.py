@@ -1,6 +1,7 @@
 from .base import ExchangeAdapter
 from typing import Dict, Any, Callable
-import httpx, asyncio, time
+import httpx, asyncio, time, json
+import websockets
 
 class BinanceAdapter(ExchangeAdapter):
     id = "binance"
@@ -10,12 +11,76 @@ class BinanceAdapter(ExchangeAdapter):
         return s.replace("/", "").upper()
 
     async def subscribe_book(self, symbol: str, depth: str, cb: Callable[[Dict[str, Any]], Any]):
-        # Placeholder WS: Implement real Binance WS if needed
-        async def unsub(): pass
+        """Subscribe to Binance order book snapshots.
+
+        A minimal implementation that opens a public WebSocket connection to
+        Binance and relays messages to the provided callback.  The returned
+        function can be awaited to gracefully close the stream.
+        """
+        stream = f"{symbol.lower()}@depth20@100ms"
+        url = f"wss://stream.binance.com:9443/ws/{stream}"
+        running = True
+
+        async def _run():
+            nonlocal running
+            async with websockets.connect(url, ping_interval=20, ping_timeout=20, close_timeout=5) as ws:
+                while running:
+                    msg = json.loads(await ws.recv())
+                    bids = [[float(p), float(q)] for p, q, *_ in msg.get("b", [])]
+                    asks = [[float(p), float(q)] for p, q, *_ in msg.get("a", [])]
+                    evt = {
+                        "type": "book",
+                        "symbol": symbol,
+                        "bids": bids,
+                        "asks": asks,
+                        "ts": msg.get("E") or time.time(),
+                    }
+                    await cb(evt)
+
+        task = asyncio.create_task(_run())
+
+        async def unsub():
+            nonlocal running
+            running = False
+            task.cancel()
+            try:
+                await task
+            except Exception:
+                pass
+
         return unsub
 
     async def subscribe_trades(self, symbol: str, cb: Callable[[Dict[str, Any]], Any]):
-        async def unsub(): pass
+        stream = f"{symbol.lower()}@trade"
+        url = f"wss://stream.binance.com:9443/ws/{stream}"
+        running = True
+
+        async def _run():
+            nonlocal running
+            async with websockets.connect(url, ping_interval=20, ping_timeout=20, close_timeout=5) as ws:
+                while running:
+                    msg = json.loads(await ws.recv())
+                    evt = {
+                        "type": "trade",
+                        "symbol": symbol,
+                        "price": float(msg.get("p", 0.0)),
+                        "qty": float(msg.get("q", 0.0)),
+                        "side": "buy" if msg.get("m") is False else "sell",
+                        "ts": msg.get("E") or time.time(),
+                    }
+                    await cb(evt)
+
+        task = asyncio.create_task(_run())
+
+        async def unsub():
+            nonlocal running
+            running = False
+            task.cancel()
+            try:
+                await task
+            except Exception:
+                pass
+
         return unsub
 
     async def get_ohlcv(self, symbol: str, tf: str, since=None, limit: int=200):
