@@ -26,6 +26,23 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     </div>
 
     <div class="card" style="padding:12px;margin-top:8px;">
+      <div *ngIf="loadingPolicies">Загрузка политик...</div>
+      <ng-container *ngIf="!loadingPolicies">
+        <form [formGroup]="policiesForm">
+          <label>Risk policy
+            <select formControlName="policy">
+              <option *ngFor="let p of policies" [value]="p">{{ p }}</option>
+            </select>
+          </label>
+        </form>
+        <div class="muted" *ngIf="!policies.length">Политики не найдены</div>
+        <div class="row" style="margin-top:8px;">
+          <button mat-stroked-button type="button" (click)="refreshPolicies()">Обновить</button>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="card" style="padding:12px;margin-top:8px;">
       <form [formGroup]="limitsForm" (ngSubmit)="save()">
         <div *ngIf="loadingLimits">Загрузка лимитов...</div>
         <div *ngIf="!loadingLimits">
@@ -69,6 +86,12 @@ export class RiskPage {
   status: RiskStatus | null = null;
   loadingStatus = true;
 
+  policiesForm: FormGroup = this.fb.group({
+    policy: [''],
+  });
+  policies: string[] = [];
+  loadingPolicies = true;
+
   limitsForm: FormGroup = this.fb.group({
     max_drawdown_pct: [0],
     dd_window_sec: [0],
@@ -100,6 +123,7 @@ export class RiskPage {
 
   ngOnInit() {
     this.refreshStatus(true);
+    this.refreshPolicies(true);
     this.refreshLimits(true);
   }
 
@@ -112,6 +136,29 @@ export class RiskPage {
       this.handleError('Failed to load risk status', err);
     } finally {
       this.loadingStatus = false;
+    }
+  }
+
+  async refreshPolicies(silent = false) {
+    this.loadingPolicies = true;
+    this.policiesForm.disable();
+    try {
+      this.policies = await this.api.getRiskPolicies();
+      if (this.policies.length && !this.policiesForm.value.policy) {
+        this.policiesForm.patchValue({ policy: this.policies[0] });
+      }
+      if (!silent) this.snackBar.open('Risk policies loaded', 'Close', { duration: 3000 });
+    } catch (err: any) {
+      if (err?.status === 404) {
+        // endpoint may be unavailable
+        this.policies = [];
+        if (!silent) this.snackBar.open('Risk policies not found', 'Close', { duration: 3000 });
+      } else {
+        this.handleError('Failed to load risk policies', err);
+      }
+    } finally {
+      this.loadingPolicies = false;
+      this.policiesForm.enable();
     }
   }
 
