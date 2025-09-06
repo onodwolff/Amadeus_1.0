@@ -97,14 +97,15 @@ export class RiskPage {
   }
 
   ngOnInit() {
-    this.refreshStatus();
-    this.refreshLimits();
+    this.refreshStatus(true);
+    this.refreshLimits(true);
   }
 
-  async refreshStatus() {
+  async refreshStatus(silent = false) {
     this.loadingStatus = true;
     try {
       this.status = await this.api.getRiskStatus();
+      if (!silent) alert('Risk status loaded');
     } catch (err) {
       this.handleError('Failed to load risk status', err);
     } finally {
@@ -112,11 +113,12 @@ export class RiskPage {
     }
   }
 
-  async refreshLimits() {
+  async refreshLimits(silent = false) {
     this.loadingLimits = true;
     try {
       const limits = await this.api.getRiskLimits();
       this.limitsForm.patchValue(limits || {});
+      if (!silent) alert('Risk limits loaded');
     } catch (err) {
       this.handleError('Failed to load risk limits', err);
     } finally {
@@ -128,7 +130,8 @@ export class RiskPage {
     this.loadingLimits = true;
     try {
       await this.api.setRiskLimits(this.limitsForm.value);
-      await this.refreshLimits();
+      alert('Risk limits saved');
+      await this.refreshLimits(true);
     } catch (err) {
       this.handleError('Failed to save risk limits', err);
     } finally {
@@ -139,7 +142,8 @@ export class RiskPage {
   async unlock() {
     try {
       await this.api.unlockRisk();
-      await this.refreshStatus();
+      alert('Risk unlocked');
+      await this.refreshStatus(true);
     } catch (err) {
       this.handleError('Failed to unlock risk', err);
     }
