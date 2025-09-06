@@ -62,7 +62,7 @@ import { firstValueFrom } from 'rxjs';
 export class StrategiesComponent {
   openCreate = false;
   list = signal<{id:string;running:boolean;equity?:number}[]>([]);
-  sid = 'sample_ema_crossover';
+  sid = '';
   cfg: any = {};
   schema = signal<any>({type:'object', properties:{}});
   api = inject(ApiService);
@@ -99,6 +99,7 @@ export class StrategiesComponent {
   }
 
   async loadSchema() {
+    if (!this.sid) return;
     try {
       const s = await this.api.getSchema(this.sid);
       this.schema.set(s.schema || s);
@@ -111,6 +112,7 @@ export class StrategiesComponent {
   }
 
   async create() {
+    if (!this.sid) return;
     try {
       await this.api.startStrategy(this.sid, this.cfg);
       this.openCreate = false;
