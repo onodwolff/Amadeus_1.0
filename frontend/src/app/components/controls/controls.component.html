@@ -1,14 +1,14 @@
 <div class="controls">
     <div class="left">
-        <button mat-raised-button color="primary"
+        <button class="btn primary"
                 (click)="doStart()" [disabled]="busy || running">
             ▶︎ Старт
         </button>
-        <button mat-stroked-button color="warn"
+        <button class="btn warn"
                 (click)="doStop()" [disabled]="busy || !running">
             ■ Стоп
         </button>
-        <button mat-button (click)="refresh()" [disabled]="busy">Обновить</button>
+        <button class="btn" (click)="refresh()" [disabled]="busy">Обновить</button>
     </div>
 
     <div class="right">

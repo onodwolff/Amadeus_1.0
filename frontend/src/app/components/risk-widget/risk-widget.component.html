@@ -2,8 +2,8 @@
     <div class="row">
         <div class="chip" [class.on]="data?.enabled">Risk: {{ data?.enabled ? 'ON' : 'OFF' }}</div>
         <div class="chip" [class.on]="data?.allowed">Entries: {{ data?.allowed ? 'ALLOWED' : 'BLOCKED' }}</div>
-        <button mat-stroked-button (click)="refresh()">Обновить</button>
-        <button mat-stroked-button color="warn" (click)="unlock()">Снять блокировки</button>
+        <button class="btn" (click)="refresh()">Обновить</button>
+        <button class="btn warn" (click)="unlock()">Снять блокировки</button>
     </div>
 
     <div class="grid">

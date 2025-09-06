@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AppMaterialModule } from '../app.module';
+import { PrimeNgModule } from '../prime-ng.module';
+import { ToastService } from '../shared/ui/toast.service';
 import { ApiService } from '../core/services/api.service';
 
 @Component({
   standalone: true,
   selector: 'app-strategies',
-  imports: [CommonModule, FormsModule, AppMaterialModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   template: `
   <h2 class="mb-2">Strategies</h2>
   <div class="mb-3">
@@ -28,7 +28,7 @@ export class StrategiesComponent implements OnInit {
   exchange = 'mock';
   symbol = '';
 
-  constructor(private api: ApiService, private snack: MatSnackBar) {}
+  constructor(private api: ApiService, private toast: ToastService) {}
 
   async ngOnInit() {
     await this.loadStrategies();
@@ -41,7 +41,7 @@ export class StrategiesComponent implements OnInit {
         this.sid = this.strategies[0].id;
       }
     } catch (err: any) {
-      this.snack.open(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -54,7 +54,7 @@ export class StrategiesComponent implements OnInit {
       });
       await this.loadStrategies();
     } catch (err: any) {
-      this.snack.open(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -71,10 +71,10 @@ export class StrategiesComponent implements OnInit {
         await this.api.stopBot(bot.id);
         await this.loadStrategies();
       } else {
-        this.snack.open('Bot not found', 'OK', { duration: 2500 });
+        this.toast.push('Bot not found', 'error');
       }
     } catch (err: any) {
-      this.snack.open(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 }

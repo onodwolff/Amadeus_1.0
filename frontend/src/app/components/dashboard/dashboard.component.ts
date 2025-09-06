@@ -1,11 +1,11 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { ApiService } from '../../core/services/api.service';
 import { WsService } from '../../core/services/ws.service';
 import { Subscription } from 'rxjs';
 import { EquitySparklineComponent } from '../equity-sparkline/equity-sparkline.component'; // ⬅️ импорт спарклайна
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from '../../shared/ui/toast.service';
 
 interface WsStats { ws_clients: number; ws_rate: number; }
 interface MarketSnap { symbol?: string; bid?: number; ask?: number; last?: number; ts?: number; raw?: any; }
@@ -13,7 +13,7 @@ interface MarketSnap { symbol?: string; bid?: number; ask?: number; last?: numbe
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, AppMaterialModule, EquitySparklineComponent], // ⬅️ добавить в imports
+  imports: [CommonModule, PrimeNgModule, EquitySparklineComponent], // ⬅️ добавить в imports
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -29,7 +29,7 @@ export class DashboardComponent implements OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private api: ApiService, private wsSvc: WsService, private snack: MatSnackBar) {
+  constructor(private api: ApiService, private wsSvc: WsService, private toast: ToastService) {
     // статус бэкенда недоступен
     this.refreshStatus();
     this.bindWs();
@@ -88,14 +88,14 @@ export class DashboardComponent implements OnDestroy {
     if (!window.confirm('Выполнить PANIC SELL?')) return;
     const id = this.cfg?.id || this.cfg?.botId || this.cfg?.bot_id;
     if (!id) {
-      this.snack.open('No active bot', 'OK', { duration: 2000 });
+      this.toast.push('No active bot', 'error');
       return;
     }
     try {
       await this.api.stopBot(id);
-      this.snack.open('Panic sell executed', 'OK', { duration: 2000 });
+      this.toast.push('Panic sell executed', 'success');
     } catch (err: any) {
-      this.snack.open(`Ошибка: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-    }
+      this.toast.push(`Ошибка: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
   }
+}
 }

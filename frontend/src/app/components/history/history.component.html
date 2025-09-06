@@ -4,18 +4,18 @@
 <div class="row">
     <div>
         <b>Orders:</b> {{ stats?.orders ?? 0 }}
-        <button mat-stroked-button (click)="refreshOrders()">Обновить</button>
-        <button mat-stroked-button (click)="export('orders')">Export CSV</button>
-        <button mat-button color="warn" (click)="clear('orders')">Очистить</button>
+        <button class="btn" (click)="refreshOrders()">Обновить</button>
+        <button class="btn" (click)="export('orders')">Export CSV</button>
+        <button class="btn warn" (click)="clear('orders')">Очистить</button>
     </div>
     <div>
         <b>Trades:</b> {{ stats?.trades ?? 0 }}
-        <button mat-stroked-button (click)="refreshTrades()">Обновить</button>
-        <button mat-stroked-button (click)="export('trades')">Export CSV</button>
-        <button mat-button color="warn" (click)="clear('trades')">Очистить</button>
+        <button class="btn" (click)="refreshTrades()">Обновить</button>
+        <button class="btn" (click)="export('trades')">Export CSV</button>
+        <button class="btn warn" (click)="clear('trades')">Очистить</button>
     </div>
     <div>
-        <button mat-raised-button color="primary" (click)="clear('all')">Очистить всё</button>
+        <button class="btn primary" (click)="clear('all')">Очистить всё</button>
     </div>
 </div>
 

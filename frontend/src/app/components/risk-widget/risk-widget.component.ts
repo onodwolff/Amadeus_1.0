@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { RiskStatus } from '../../models';
 
 @Component({
     selector: 'app-risk-widget',
     standalone: true,
-    imports: [CommonModule, AppMaterialModule],
+    imports: [CommonModule, PrimeNgModule],
     templateUrl: './risk-widget.component.html',
     styleUrls: ['./risk-widget.component.scss']
 })

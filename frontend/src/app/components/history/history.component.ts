@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { HistoryResponse, HistoryStats, OrderHistoryItem, TradeHistoryItem } from '../../models';
 
 @Component({
     selector: 'app-history',
     standalone: true,
-    imports: [CommonModule, AppMaterialModule],
+    imports: [CommonModule, PrimeNgModule],
     templateUrl: './history.component.html',
     styleUrls: ['./history.component.scss']
 })

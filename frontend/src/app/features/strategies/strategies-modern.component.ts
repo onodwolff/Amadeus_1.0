@@ -1,14 +1,14 @@
 import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
+import { ToastService } from '../../shared/ui/toast.service';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
   standalone: true,
   selector: 'app-strategies-modern',
-  imports: [CommonModule, RouterModule, AppMaterialModule],
+  imports: [CommonModule, RouterModule, PrimeNgModule],
   template: `
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-semibold">Strategies</h2>
@@ -60,7 +60,7 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class StrategiesModernComponent implements OnInit {
   private api = inject(ApiService);
-  private snack = inject(MatSnackBar);
+  private toast = inject(ToastService);
   private router = inject(Router);
 
   @Output() create = new EventEmitter<void>();
@@ -110,7 +110,7 @@ export class StrategiesModernComponent implements OnInit {
       );
       this.items.set(list);
     } catch (err: any) {
-      this.snack.open(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
