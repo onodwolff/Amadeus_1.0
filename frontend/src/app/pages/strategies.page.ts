@@ -32,7 +32,7 @@ import { firstValueFrom } from 'rxjs';
           </div>
           <div>
             <label class="block text-sm mb-1">Risk Policy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="riskPolicy">
+            <select class="border rounded p-2 w-full" [(ngModel)]="riskPolicy" [disabled]="!riskPolicies.length">
               <option *ngFor="let r of riskPolicies" [value]="r">{{ r }}</option>
             </select>
           </div>
@@ -188,7 +188,24 @@ export class StrategiesPage {
   }
 
   private async loadRiskPolicies() {
-    this.riskPolicies = await this.api.getRiskPolicies();
+    try {
+      this.riskPolicies = await this.api.getRiskPolicies();
+      if (!this.riskPolicies.length) {
+        this.snack.open('No risk policies found', 'OK', { duration: 2500 });
+      }
+    } catch (err: any) {
+      if (err?.status === 404) {
+        this.riskPolicies = [];
+        this.snack.open('No risk policies found', 'OK', { duration: 2500 });
+      } else {
+        this.riskPolicies = [];
+        this.snack.open(
+          `Load failed: ${err?.error?.error || err?.message || 'unknown'}`,
+          'OK',
+          { duration: 2500 },
+        );
+      }
+    }
     if (!this.riskPolicy && this.riskPolicies.length) {
       this.riskPolicy = this.riskPolicies[0];
     }
