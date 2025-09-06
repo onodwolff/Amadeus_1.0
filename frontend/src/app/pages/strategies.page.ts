@@ -16,60 +16,41 @@ import { firstValueFrom } from 'rxjs';
     <div class="p-4">
       <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" (edit)="onEdit($event)" (remove)="onRemove($event)" #list></app-strategies-modern>
     </div>
-
-    <div *ngIf="openCreate" class="fixed inset-0 grid place-items-center">
-      <div class="rounded p-4 w-[700px] max-w-[95vw]">
-        <div class="flex items-center justify-between mb-3">
-          <div class="font-medium">{{ editing ? 'Edit Strategy' : 'Create Strategy' }}</div>
-          <p-button label="Close" (onClick)="openCreate=false; editing=false" text></p-button>
+    <p-dialog [(visible)]="openCreate" [modal]="true" [header]="editing ? 'Edit Strategy' : 'Create Strategy'" styleClass="w-[700px] max-w-[95vw]">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm mb-1">Strategy</label>
+          <p-dropdown [options]="strategyOptions" [(ngModel)]="sid" (onChange)="loadSchema()"></p-dropdown>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm mb-1">Strategy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="sid" (ngModelChange)="loadSchema()">
-              <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Risk Policy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="riskPolicy" [disabled]="!riskPolicies.length">
-              <option *ngFor="let r of riskPolicies" [value]="r">{{ r }}</option>
-            </select>
-          </div>
-          <div class="col-span-2">
-            <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
-          </div>
-          <div class="col-span-2 mt-2 flex gap-2">
-            <p-button label="Save" (onClick)="submitSave()" severity="primary"></p-button>
-            <p-button label="Cancel" (onClick)="openCreate=false; editing=false"></p-button>
-          </div>
+        <div>
+          <label class="block text-sm mb-1">Risk Policy</label>
+          <p-dropdown [options]="riskPolicyOptions" [(ngModel)]="riskPolicy" [disabled]="!riskPolicyOptions.length"></p-dropdown>
+        </div>
+        <div class="col-span-2">
+          <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
+        </div>
+        <div class="col-span-2 mt-2 flex gap-2">
+          <p-button label="Save" (onClick)="submitSave()" severity="primary"></p-button>
+          <p-button label="Cancel" (onClick)="openCreate=false; editing=false"></p-button>
         </div>
       </div>
-    </div>
+    </p-dialog>
 
-    <div *ngIf="openImport" class="fixed inset-0 grid place-items-center">
-      <div class="rounded p-4 w-[500px] max-w-[95vw]">
-        <div class="flex items-center justify-between mb-3">
-          <div class="font-medium">Import Strategy Config</div>
-          <p-button label="Close" (onClick)="openImport=false" text></p-button>
+    <p-dialog [(visible)]="openImport" [modal]="true" header="Import Strategy Config" styleClass="w-[500px] max-w-[95vw]">
+      <div class="grid gap-3">
+        <div>
+          <label class="block text-sm mb-1">Strategy</label>
+          <p-dropdown [options]="strategyOptions" [(ngModel)]="sid"></p-dropdown>
         </div>
-        <div class="grid gap-3">
-          <div>
-            <label class="block text-sm mb-1">Strategy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="sid">
-              <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
-            </select>
-          </div>
-          <div>
-            <input type="file" accept="application/json" (change)="onFile($event)">
-          </div>
-          <div class="flex gap-2 mt-2">
-            <p-button label="Save" (onClick)="submitImport()" severity="primary"></p-button>
-            <p-button label="Cancel" (onClick)="openImport=false"></p-button>
-          </div>
+        <div>
+          <input type="file" accept="application/json" (change)="onFile($event)">
+        </div>
+        <div class="flex gap-2 mt-2">
+          <p-button label="Save" (onClick)="submitImport()" severity="primary"></p-button>
+          <p-button label="Cancel" (onClick)="openImport=false"></p-button>
         </div>
       </div>
-    </div>
+    </p-dialog>
   `
 })
 export class StrategiesPage {
@@ -205,5 +186,13 @@ export class StrategiesPage {
     if (!this.riskPolicy && this.riskPolicies.length) {
       this.riskPolicy = this.riskPolicies[0];
     }
+  }
+
+  get strategyOptions() {
+    return this.strategies.map(s => ({ label: s.id, value: s.id }));
+  }
+
+  get riskPolicyOptions() {
+    return this.riskPolicies.map(r => ({ label: r, value: r }));
   }
 }

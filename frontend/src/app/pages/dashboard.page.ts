@@ -1,71 +1,66 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
 import { ApiService } from '../core/services/api.service';
+import { PrimeNgModule } from '../prime-ng.module';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   template: `
     <div class="p-4">
       <div class="flex justify-between mb-3">
         <h1 class="text-lg font-medium">Bots</h1>
         <p-button label="Add Bot" (onClick)="openAdd=true" severity="primary"></p-button>
       </div>
-      <table class="tbl w-full">
-        <tr>
-          <th>ID</th>
-          <th>Strategy</th>
-          <th>Exchange</th>
-          <th>Symbol</th>
-          <th>Risk</th>
-          <th></th>
-        </tr>
-        <tr *ngFor="let b of bots">
-          <td>{{ b.id }}</td>
-          <td>{{ b.strategy_id }}</td>
-          <td>{{ b.exchange }}</td>
-          <td>{{ b.symbol }}</td>
-          <td>{{ b.risk_profile }}</td>
-          <td><p-button label="Stop" (onClick)="stop(b.id)"></p-button></td>
-      </tr>
-      </table>
+      <p-table [value]="bots" class="w-full">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID</th>
+            <th>Strategy</th>
+            <th>Exchange</th>
+            <th>Symbol</th>
+            <th>Risk</th>
+            <th></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-b>
+          <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.strategy_id }}</td>
+            <td>{{ b.exchange }}</td>
+            <td>{{ b.symbol }}</td>
+            <td>{{ b.risk_profile }}</td>
+            <td><p-button label="Stop" (onClick)="stop(b.id)"></p-button></td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
-
-    <div *ngIf="openAdd" class="fixed inset-0 grid place-items-center">
-      <div class="rounded p-4 w-[400px] max-w-[95vw]">
-        <div class="flex items-center justify-between mb-3">
-          <div class="font-medium">Add Bot</div>
-          <p-button label="Close" (onClick)="openAdd=false" text></p-button>
+    <p-dialog [(visible)]="openAdd" [modal]="true" header="Add Bot" styleClass="w-[400px] max-w-[95vw]">
+      <div class="grid gap-3">
+        <div>
+          <label class="block text-sm mb-1">Strategy</label>
+          <p-dropdown [options]="strategyOptions" [(ngModel)]="strategy_id"></p-dropdown>
         </div>
-        <div class="grid gap-3">
-          <div>
-            <label class="block text-sm mb-1">Strategy</label>
-            <select class="border rounded p-2 w-full" [(ngModel)]="strategy_id">
-              <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Exchange</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="exchange" />
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Symbol</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="symbol" />
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Risk Profile</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="risk" />
-          </div>
-          <div class="flex gap-2 mt-2">
-            <p-button label="Start" (onClick)="start()" severity="primary"></p-button>
-            <p-button label="Cancel" (onClick)="openAdd=false"></p-button>
-          </div>
+        <div>
+          <label class="block text-sm mb-1">Exchange</label>
+          <input class="border rounded p-2 w-full" [(ngModel)]="exchange" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Symbol</label>
+          <input class="border rounded p-2 w-full" [(ngModel)]="symbol" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Risk Profile</label>
+          <input class="border rounded p-2 w-full" [(ngModel)]="risk" />
+        </div>
+        <div class="flex gap-2 mt-2">
+          <p-button label="Start" (onClick)="start()" severity="primary"></p-button>
+          <p-button label="Cancel" (onClick)="openAdd=false"></p-button>
         </div>
       </div>
-    </div>
+    </p-dialog>
   `,
 })
 export class DashboardPage implements OnInit {
@@ -115,5 +110,9 @@ export class DashboardPage implements OnInit {
   async stop(id: string) {
     await this.api.stopBot(id);
     await this.refresh();
+  }
+
+  get strategyOptions() {
+    return this.strategies.map(s => ({ label: s.id, value: s.id }));
   }
 }
