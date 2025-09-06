@@ -1,6 +1,6 @@
 import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
 import { StrategiesModernComponent } from '../features/strategies/strategies-modern.component';
 import { JsonSchemaFormComponent } from '../shared/ui/json-schema-form.component';
 import { ApiService } from '../core/services/api.service';
@@ -20,17 +20,19 @@ import { firstValueFrom } from 'rxjs';
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-sm mb-1">Strategy</label>
-          <p-dropdown [options]="strategyOptions" [(ngModel)]="sid" (onChange)="loadSchema()"></p-dropdown>
+          <p-dropdown [options]="strategyOptions" name="createSid" [(ngModel)]="sid" (onChange)="loadSchema()" required #createSidModel="ngModel"></p-dropdown>
+          <p-messages *ngIf="createSidModel.invalid && createSidModel.touched" [value]="[{severity:'error', detail:'Strategy is required'}]"></p-messages>
         </div>
         <div>
           <label class="block text-sm mb-1">Risk Policy</label>
-          <p-dropdown [options]="riskPolicyOptions" [(ngModel)]="riskPolicy" [disabled]="!riskPolicyOptions.length"></p-dropdown>
+          <p-dropdown [options]="riskPolicyOptions" name="riskPolicy" [(ngModel)]="riskPolicy" [disabled]="!riskPolicyOptions.length" required #riskPolicyModel="ngModel"></p-dropdown>
+          <p-messages *ngIf="riskPolicyModel.invalid && riskPolicyModel.touched && riskPolicyOptions.length" [value]="[{severity:'error', detail:'Risk Policy is required'}]"></p-messages>
         </div>
         <div class="col-span-2">
           <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
         </div>
         <div class="col-span-2 mt-2 flex gap-2">
-          <p-button label="Save" (onClick)="submitSave()" severity="primary"></p-button>
+          <p-button label="Save" (onClick)="submitSave(createSidModel, riskPolicyModel)" severity="primary"></p-button>
           <p-button label="Cancel" (onClick)="openCreate=false; editing=false"></p-button>
         </div>
       </div>
@@ -40,13 +42,15 @@ import { firstValueFrom } from 'rxjs';
       <div class="grid gap-3">
         <div>
           <label class="block text-sm mb-1">Strategy</label>
-          <p-dropdown [options]="strategyOptions" [(ngModel)]="sid"></p-dropdown>
+          <p-dropdown [options]="strategyOptions" name="importSid" [(ngModel)]="sid" required #importSidModel="ngModel"></p-dropdown>
+          <p-messages *ngIf="importSidModel.invalid && importSidModel.touched" [value]="[{severity:'error', detail:'Strategy is required'}]"></p-messages>
         </div>
         <div>
-          <input type="file" accept="application/json" (change)="onFile($event)">
+          <p-fileUpload mode="basic" accept="application/json" [auto]="true" customUpload="true" (uploadHandler)="onFileUpload($event)" chooseLabel="Select File"></p-fileUpload>
+          <p-messages *ngIf="fileError" [value]="[{severity:'error', detail:fileError}]"></p-messages>
         </div>
         <div class="flex gap-2 mt-2">
-          <p-button label="Save" (onClick)="submitImport()" severity="primary"></p-button>
+          <p-button label="Save" (onClick)="submitImport(importSidModel)" severity="primary"></p-button>
           <p-button label="Cancel" (onClick)="openImport=false"></p-button>
         </div>
       </div>
@@ -67,6 +71,8 @@ export class StrategiesPage {
   schema: any = { type: 'object', properties: {} };
   cfg: any = {};
   importedCfg: any = {};
+  fileError = '';
+  private fileSelected = false;
   riskPolicies: string[] = [];
   riskPolicy = '';
 
@@ -81,6 +87,9 @@ export class StrategiesPage {
 
   async onImport() {
     this.openImport = true;
+    this.fileError = '';
+    this.fileSelected = false;
+    this.importedCfg = {};
     await this.loadStrategies();
   }
 
@@ -122,7 +131,12 @@ export class StrategiesPage {
     this.cfg = {};
   }
 
-  async submitSave() {
+  async submitSave(sidModel: NgModel, riskModel: NgModel) {
+    if (sidModel.invalid || (this.riskPolicyOptions.length && riskModel.invalid)) {
+      sidModel.control.markAsTouched();
+      if (this.riskPolicyOptions.length) riskModel.control.markAsTouched();
+      return;
+    }
     try {
       if (this.editing) {
         await firstValueFrom(
@@ -141,21 +155,34 @@ export class StrategiesPage {
     }
   }
 
-  onFile(ev: Event) {
-    const file = (ev.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  onFileUpload(event: any) {
+    const file = event.files?.[0];
+    if (!file) {
+      this.fileError = 'File is required';
+      this.fileSelected = false;
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         this.importedCfg = JSON.parse(String(reader.result));
+        this.fileError = '';
+        this.fileSelected = true;
       } catch {
         this.importedCfg = {};
+        this.fileError = 'Invalid JSON file';
+        this.fileSelected = false;
       }
     };
     reader.readAsText(file);
   }
 
-  async submitImport() {
+  async submitImport(sidModel: NgModel) {
+    if (sidModel.invalid || !this.fileSelected || this.fileError) {
+      if (sidModel.invalid) sidModel.control.markAsTouched();
+      if (!this.fileSelected) this.fileError = 'Please select a config file';
+      return;
+    }
     try {
       await firstValueFrom(
         this.api.put(`/strategies/${this.sid}`, { config: this.importedCfg || {}, risk_policy: this.riskPolicy })
