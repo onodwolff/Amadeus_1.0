@@ -135,6 +135,11 @@ export class ApiService {
     return firstValueFrom(this.http.get<RiskStatus>(url, { headers: this.headers() }));
   }
 
+  getRiskPolicies(): Promise<string[]> {
+    const url = this.url('/risk/policies');
+    return firstValueFrom(this.http.get<string[]>(url, { headers: this.headers() }));
+  }
+
   getRiskLimits() {
     const url = this.url('/risk/limits');
     return firstValueFrom(this.http.get(url, { headers: this.headers() }));
