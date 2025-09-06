@@ -2,6 +2,7 @@ from typing import Optional
 from sqlmodel import SQLModel, Field, Column, JSON
 from datetime import datetime
 
+
 class OrderRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     order_id: str
@@ -16,6 +17,7 @@ class OrderRow(SQLModel, table=True):
     strategy_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class FillRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     order_id: str
@@ -29,6 +31,7 @@ class FillRow(SQLModel, table=True):
     ts: int  # ms timestamp
     meta: dict = Field(sa_column=Column(JSON), default_factory=dict)
 
+
 class PositionRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     symbol: str
@@ -39,6 +42,7 @@ class PositionRow(SQLModel, table=True):
     strategy_id: Optional[str] = None
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class BalanceRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     asset: str
@@ -47,6 +51,7 @@ class BalanceRow(SQLModel, table=True):
     exchange: str = "mock"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class CredentialRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     exchange: str
@@ -54,6 +59,7 @@ class CredentialRow(SQLModel, table=True):
     api_key_enc: str
     api_secret_enc: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
 
 class AuditLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -64,6 +70,7 @@ class AuditLog(SQLModel, table=True):
     status: int
     extra: dict = Field(sa_column=Column(JSON), default_factory=dict)
 
+
 class RealizedPnlRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     symbol: str
@@ -73,9 +80,10 @@ class RealizedPnlRow(SQLModel, table=True):
     ts: int
     qty: float
     price: float
-    pnl: float                 # realized PnL from position close (+/-)
-    fee: float = 0.0           # trading fee (negative reduces pnl)
-    funding: float = 0.0       # funding payment (+ receive, - pay)
+    pnl: float  # realized PnL from position close (+/-)
+    fee: float = 0.0  # trading fee (negative reduces pnl)
+    funding: float = 0.0  # funding payment (+ receive, - pay)
+
 
 class EquitySnapshotRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -85,3 +93,12 @@ class EquitySnapshotRow(SQLModel, table=True):
     exchange: Optional[str] = None
     category: Optional[str] = None
     strategy_id: Optional[str] = None
+
+
+class StrategyRow(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    config: dict = Field(sa_column=Column(JSON), default_factory=dict)
+    risk_policy: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
