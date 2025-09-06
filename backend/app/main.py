@@ -46,5 +46,8 @@ async def ws_logs(ws: WebSocket):
                     await ws.send_text(line.rstrip())
                 else:
                     await asyncio.sleep(0.2)
+    except FileNotFoundError:
+        await ws.send_text("Log file not found")
+        await ws.close(code=1003)
     except WebSocketDisconnect:
         pass
