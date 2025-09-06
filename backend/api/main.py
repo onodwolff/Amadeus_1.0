@@ -1,9 +1,10 @@
 import os
 import time
 
-from fastapi import FastAPI, APIRouter
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.observability import router as observability_router
 from .routers import (
     backtest,
     risk,
@@ -41,6 +42,7 @@ app.add_middleware(
 )
 
 app.include_router(status_router, prefix="/api")
+app.include_router(observability_router, prefix="/api")
 app.include_router(trades.router, prefix="/api")
 app.include_router(risk_ext.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
