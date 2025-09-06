@@ -1,7 +1,6 @@
 import os
-import time
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.observability import router as observability_router
@@ -16,20 +15,12 @@ from .routers import (
     trades,
     observability,
     ws_logs,
+    dashboard,
+    history,
+    status,
 )
 
 app = FastAPI(title="Amadeus API (patch v12 mega)")
-START_TIME = time.time()
-
-status_router = APIRouter()
-
-
-@status_router.get("/status")
-def api_status():
-    """Return basic health information with uptime and version."""
-    uptime = time.time() - START_TIME
-    version = os.getenv("APP_VERSION", "dev")
-    return {"ok": True, "uptime": uptime, "version": version}
 
 # Configure CORS settings from environment or defaults
 ALLOWED_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:4400").split(",")
@@ -44,7 +35,9 @@ app.add_middleware(
     allow_headers=ALLOWED_HEADERS,
 )
 
-app.include_router(status_router, prefix="/api")
+app.include_router(status.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
+app.include_router(history.router, prefix="/api")
 app.include_router(observability_router, prefix="/api")
 app.include_router(trades.router, prefix="/api")
 app.include_router(risk_ext.router, prefix="/api")
