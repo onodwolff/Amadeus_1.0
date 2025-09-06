@@ -70,7 +70,7 @@ export class StrategiesModernComponent implements OnInit {
     this.setLoading(id, true);
     try {
       await this.api.startStrategy(id, {});
-      this.items.update(list => list.map(it => it.id === id ? { ...it, running: true } : it));
+      await this.refresh();
     } catch (err: any) {
       this.snack.open(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     } finally {
@@ -82,7 +82,7 @@ export class StrategiesModernComponent implements OnInit {
     this.setLoading(id, true);
     try {
       await this.api.stopStrategy(id);
-      this.items.update(list => list.map(it => it.id === id ? { ...it, running: false } : it));
+      await this.refresh();
     } catch (err: any) {
       this.snack.open(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     } finally {
