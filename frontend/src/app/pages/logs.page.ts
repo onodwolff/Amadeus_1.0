@@ -30,7 +30,8 @@ export class LogsPage {
   filter = '';
   status = 'disconnected';
   private msgSub?: Subscription;
-  private evtSub?: Subscription;
+  private errSub?: Subscription;
+  private statusSub?: Subscription;
 
   constructor(private ws: WsService, private api: ApiService) {}
 
@@ -52,49 +53,27 @@ export class LogsPage {
         setTimeout(() => this.scrollBottom());
       }
     });
+
+    this.statusSub = this.ws.status$.subscribe(s => this.status = s);
+    this.errSub = this.ws.errors$.subscribe(err => {
+      this.lines.push(err?.message || 'WebSocket connection failed');
+      setTimeout(() => this.scrollBottom());
+    });
+    this.msgSub = this.ws.messages$.subscribe((msg: any) => {
+      const line = typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg);
+      this.lines.push(line);
+      setTimeout(() => this.scrollBottom());
+    });
+
     this.retry();
   }
 
   retry() {
     this.status = 'connecting';
-    this.msgSub?.unsubscribe();
-    this.evtSub?.unsubscribe();
-
     const ws = this.ws.connect('logs');
-
-    this.msgSub = this.ws.messages$.subscribe({
-      next: (msg: any) => {
-        if (msg?.type === 'error') {
-          const line = msg.message || 'WebSocket error';
-          this.lines.push(line);
-        } else {
-          const line = typeof msg === 'string' ? msg : JSON.stringify(msg);
-          this.lines.push(line);
-        }
-        setTimeout(() => this.scrollBottom());
-      },
-      error: (err: any) => {
-        this.status = 'error';
-        this.lines.push(err?.message || 'WebSocket connection failed');
-        setTimeout(() => this.scrollBottom());
-      }
-    });
-
-    this.evtSub = this.ws.stream$.subscribe({
-      next: evt => {
-        if (evt.type === 'open') this.status = 'connected';
-        else if (evt.type === 'close') this.status = 'closed';
-      },
-      error: () => {
-        this.status = 'error';
-        this.lines.push('Connection lost. Please retry.');
-        setTimeout(() => this.scrollBottom());
-      }
-    });
-
     if (!ws) {
-      this.status = 'error';
       this.lines.push('Failed to connect to log stream.');
+      setTimeout(() => this.scrollBottom());
     }
   }
 
