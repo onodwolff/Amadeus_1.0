@@ -33,8 +33,8 @@ def api_status():
 
 # Configure CORS settings from environment or defaults
 ALLOWED_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:4400").split(",")
-ALLOWED_METHODS = ["GET", "POST"]
-ALLOWED_HEADERS = ["Content-Type"]
+ALLOWED_METHODS = ["*"]
+ALLOWED_HEADERS = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
