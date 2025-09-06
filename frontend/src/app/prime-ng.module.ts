@@ -6,6 +6,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { BadgeModule } from 'primeng/badge';
+import { InputTextModule } from 'primeng/inputtext';
+import { FileUploadModule } from 'primeng/fileupload';
+import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 @NgModule({
   exports: [
@@ -15,7 +21,13 @@ import { BadgeModule } from 'primeng/badge';
     DropdownModule,
     DialogModule,
     ToastModule,
-    BadgeModule
+    BadgeModule,
+    InputTextModule,
+    FileUploadModule,
+    MessagesModule,
+    MessageModule,
+    InputNumberModule,
+    InputSwitchModule
   ]
 })
 export class PrimeNgModule {}
