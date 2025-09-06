@@ -42,7 +42,9 @@ import { ApiService } from '../core/services/api.service';
         <div class="grid gap-3">
           <div>
             <label class="block text-sm mb-1">Strategy</label>
-            <input class="border rounded p-2 w-full" [(ngModel)]="strategy_id" />
+            <select class="border rounded p-2 w-full" [(ngModel)]="strategy_id">
+              <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
+            </select>
           </div>
           <div>
             <label class="block text-sm mb-1">Exchange</label>
@@ -72,6 +74,7 @@ export class DashboardPage implements OnInit {
   openAdd = false;
 
   strategy_id = '';
+  strategies: {id: string; running: boolean}[] = [];
   exchange = 'mock';
   symbol = '';
   risk = '';
@@ -83,6 +86,14 @@ export class DashboardPage implements OnInit {
   async refresh() {
     const res = await this.api.listBots();
     this.bots = res.items ?? [];
+    try {
+      this.strategies = await this.api.listStrategies();
+      if (!this.strategy_id && this.strategies.length) {
+        this.strategy_id = this.strategies[0].id;
+      }
+    } catch (err) {
+      console.error('Failed to load strategies', err);
+    }
   }
 
   async start() {

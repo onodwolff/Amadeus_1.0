@@ -14,7 +14,9 @@ import { firstValueFrom } from 'rxjs';
     <div class="grid md:grid-cols-2 gap-4">
       <div class="border rounded p-4">
         <div class="grid grid-cols-2 gap-2">
-          <input class="border rounded p-2" [(ngModel)]="sid" placeholder="strategy id">
+          <select class="border rounded p-2" [(ngModel)]="sid">
+            <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
+          </select>
           <button class="px-3 py-2 rounded bg-black text-white" (click)="load()">Load</button>
           <label>max_active_orders</label><input type="number" class="border rounded p-2" [(ngModel)]="pol.max_active_orders">
           <label>max_dd</label><input type="number" step="0.01" class="border rounded p-2" [(ngModel)]="pol.max_dd">
@@ -42,8 +44,24 @@ import { firstValueFrom } from 'rxjs';
 export class RiskComponent {
   api = inject(ApiService);
   sid='';
+  strategies: {id: string; running: boolean}[] = [];
   pol:any={max_active_orders:100, max_dd:0.3, max_leverage:5.0, max_notional_per_symbol:{}, max_pos_qty_per_symbol:{}};
   log = signal<any[]>([]);
+
+  async ngOnInit() {
+    await this.loadStrategies();
+  }
+
+  private async loadStrategies() {
+    try {
+      this.strategies = await this.api.listStrategies();
+      if (!this.sid && this.strategies.length) {
+        this.sid = this.strategies[0].id;
+      }
+    } catch (err) {
+      console.error('Failed to load strategies', err);
+    }
+  }
   async load() {
     const p = await firstValueFrom(this.api.get(`/riskx/policies/${this.sid}`));
     this.pol = Object.assign({max_active_orders:100, max_dd:0.3, max_leverage:5.0, max_notional_per_symbol:{}, max_pos_qty_per_symbol:{}}, p||{});
