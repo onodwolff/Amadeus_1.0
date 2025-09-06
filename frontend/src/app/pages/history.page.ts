@@ -3,74 +3,75 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderHistoryItem, TradeHistoryItem } from '../models';
 import { ApiService } from '../core/services/api.service';
+import { PrimeNgModule } from '../prime-ng.module';
 
 @Component({
     selector: 'app-history',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, PrimeNgModule],
     template: `
         <h1>History</h1>
         <div class="section">
             <h2>Orders</h2>
             <div class="filters">
-                <input [(ngModel)]="orderSymbol" placeholder="Symbol" />
-                <select [(ngModel)]="orderSide">
-                    <option value="">All Sides</option>
-                    <option value="buy">Buy</option>
-                    <option value="sell">Sell</option>
-                </select>
+                <input pInputText [(ngModel)]="orderSymbol" placeholder="Symbol" />
+                <p-dropdown [(ngModel)]="orderSide" [options]="sideOptions"></p-dropdown>
             </div>
-            <table class="tbl">
-                <tr>
-                    <th>Time</th>
-                    <th>Symbol</th>
-                    <th>Side</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                </tr>
-                <tr *ngFor="let o of filteredOrders">
-                    <td>{{ o.ts * 1000 | date:'medium' }}</td>
-                    <td>{{ o.symbol }}</td>
-                    <td>{{ o.side }}</td>
-                    <td>{{ o.price }}</td>
-                    <td>{{ o.qty }}</td>
-                </tr>
-            </table>
+            <p-table [value]="filteredOrders" class="tbl">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Side</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-o>
+                    <tr>
+                        <td>{{ o.ts * 1000 | date:'medium' }}</td>
+                        <td>{{ o.symbol }}</td>
+                        <td>{{ o.side }}</td>
+                        <td>{{ o.price }}</td>
+                        <td>{{ o.qty }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
             <div class="pager">
-                <button (click)="prevOrders()" [disabled]="orderOffset === 0">Prev</button>
-                <button (click)="nextOrders()" [disabled]="orders.length < limit">Next</button>
+                <p-button label="Prev" (onClick)="prevOrders()" [disabled]="orderOffset === 0"></p-button>
+                <p-button label="Next" (onClick)="nextOrders()" [disabled]="orders.length < limit"></p-button>
             </div>
         </div>
 
         <div class="section">
             <h2>Trades</h2>
             <div class="filters">
-                <input [(ngModel)]="tradeSymbol" placeholder="Symbol" />
-                <select [(ngModel)]="tradeSide">
-                    <option value="">All Sides</option>
-                    <option value="buy">Buy</option>
-                    <option value="sell">Sell</option>
-                </select>
+                <input pInputText [(ngModel)]="tradeSymbol" placeholder="Symbol" />
+                <p-dropdown [(ngModel)]="tradeSide" [options]="sideOptions"></p-dropdown>
             </div>
-            <table class="tbl">
-                <tr>
-                    <th>Time</th>
-                    <th>Symbol</th>
-                    <th>Side</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                </tr>
-                <tr *ngFor="let t of filteredTrades">
-                    <td>{{ t.ts * 1000 | date:'medium' }}</td>
-                    <td>{{ t.symbol }}</td>
-                    <td>{{ t.side }}</td>
-                    <td>{{ t.price }}</td>
-                    <td>{{ t.qty }}</td>
-                </tr>
-            </table>
+            <p-table [value]="filteredTrades" class="tbl">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Side</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-t>
+                    <tr>
+                        <td>{{ t.ts * 1000 | date:'medium' }}</td>
+                        <td>{{ t.symbol }}</td>
+                        <td>{{ t.side }}</td>
+                        <td>{{ t.price }}</td>
+                        <td>{{ t.qty }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
             <div class="pager">
-                <button (click)="prevTrades()" [disabled]="tradeOffset === 0">Prev</button>
-                <button (click)="nextTrades()" [disabled]="trades.length < limit">Next</button>
+                <p-button label="Prev" (onClick)="prevTrades()" [disabled]="tradeOffset === 0"></p-button>
+                <p-button label="Next" (onClick)="nextTrades()" [disabled]="trades.length < limit"></p-button>
             </div>
         </div>
     `
@@ -85,6 +86,11 @@ export class HistoryPage implements OnInit {
     orderSide = '';
     tradeSymbol = '';
     tradeSide = '';
+    sideOptions = [
+        { label: 'All Sides', value: '' },
+        { label: 'Buy', value: 'buy' },
+        { label: 'Sell', value: 'sell' },
+    ];
 
     constructor(private api: ApiService) {}
 

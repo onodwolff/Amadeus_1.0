@@ -23,56 +23,64 @@
     <div>
         <h4>Orders (последние)</h4>
         <div *ngIf="loadingO">Загрузка...</div>
-        <table *ngIf="!loadingO" class="tbl">
-            <tr>
-                <th style="width:60px;">ID</th>
-                <th style="width:140px;">TS</th>
-                <th style="width:80px;">Event</th>
-                <th style="width:100px;">Symbol</th>
-                <th style="width:60px;">Side</th>
-                <th style="width:80px;">Type</th>
-                <th style="width:80px;">Price</th>
-                <th style="width:80px;">Qty</th>
-                <th style="width:80px;">Status</th>
-            </tr>
-            <tr *ngFor="let o of orders">
-                <td class="mono">{{o.id}}</td>
-                <td class="mono">{{o.ts*1000 | date:'medium'}}</td>
-                <td>{{o.event}}</td>
-                <td>{{o.symbol}}</td>
-                <td>{{o.side}}</td>
-                <td>{{o.type}}</td>
-                <td class="mono">{{o.price}}</td>
-                <td class="mono">{{o.qty}}</td>
-                <td>{{o.status}}</td>
-            </tr>
-        </table>
+        <p-table *ngIf="!loadingO" [value]="orders" styleClass="tbl">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th style="width:140px;">TS</th>
+                    <th style="width:80px;">Event</th>
+                    <th style="width:100px;">Symbol</th>
+                    <th style="width:60px;">Side</th>
+                    <th style="width:80px;">Type</th>
+                    <th style="width:80px;">Price</th>
+                    <th style="width:80px;">Qty</th>
+                    <th style="width:80px;">Status</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-o>
+                <tr>
+                    <td class="mono">{{o.id}}</td>
+                    <td class="mono">{{o.ts*1000 | date:'medium'}}</td>
+                    <td>{{o.event}}</td>
+                    <td>{{o.symbol}}</td>
+                    <td>{{o.side}}</td>
+                    <td>{{o.type}}</td>
+                    <td class="mono">{{o.price}}</td>
+                    <td class="mono">{{o.qty}}</td>
+                    <td>{{o.status}}</td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 
     <div>
         <h4>Trades (последние)</h4>
         <div *ngIf="loadingT">Загрузка...</div>
-        <table *ngIf="!loadingT" class="tbl">
-            <tr>
-                <th style="width:60px;">ID</th>
-                <th style="width:140px;">TS</th>
-                <th style="width:80px;">Type</th>
-                <th style="width:100px;">Symbol</th>
-                <th style="width:60px;">Side</th>
-                <th style="width:80px;">Price</th>
-                <th style="width:80px;">Qty</th>
-                <th style="width:80px;">PNL</th>
-            </tr>
-            <tr *ngFor="let t of trades">
-                <td class="mono">{{t.id}}</td>
-                <td class="mono">{{t.ts*1000 | date:'medium'}}</td>
-                <td>{{t.type}}</td>
-                <td>{{t.symbol}}</td>
-                <td>{{t.side}}</td>
-                <td class="mono">{{t.price}}</td>
-                <td class="mono">{{t.qty}}</td>
-                <td class="mono" [class.pnl-positive]="(t.pnl||0) > 0" [class.pnl-negative]="(t.pnl||0) < 0">{{t.pnl}}</td>
-            </tr>
-        </table>
+        <p-table *ngIf="!loadingT" [value]="trades" styleClass="tbl">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th style="width:140px;">TS</th>
+                    <th style="width:80px;">Type</th>
+                    <th style="width:100px;">Symbol</th>
+                    <th style="width:60px;">Side</th>
+                    <th style="width:80px;">Price</th>
+                    <th style="width:80px;">Qty</th>
+                    <th style="width:80px;">PNL</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-t>
+                <tr>
+                    <td class="mono">{{t.id}}</td>
+                    <td class="mono">{{t.ts*1000 | date:'medium'}}</td>
+                    <td>{{t.type}}</td>
+                    <td>{{t.symbol}}</td>
+                    <td>{{t.side}}</td>
+                    <td class="mono">{{t.price}}</td>
+                    <td class="mono">{{t.qty}}</td>
+                    <td class="mono" [class.pnl-positive]="(t.pnl||0) > 0" [class.pnl-negative]="(t.pnl||0) < 0">{{t.pnl}}</td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 </div>

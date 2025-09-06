@@ -2,45 +2,38 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { PrimeNgModule } from '../../prime-ng.module';
 
 @Component({
   standalone: true,
   selector: 'app-backtest',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   template: `
   <div class="p-4 max-w-3xl">
     <h2 class="text-xl font-semibold mb-4">Backtest</h2>
     <div class="grid grid-cols-6 gap-3 items-end mb-4">
       <div>
         <label class="block text-sm mb-1">Exchange</label>
-        <select class="border rounded p-2 w-full" [(ngModel)]="cfg.exchange">
-          <option value="mock">mock</option>
-          <option value="bybit">bybit</option>
-          <option value="binance">binance</option>
-        </select>
+        <p-dropdown class="w-full" [(ngModel)]="cfg.exchange" [options]="exchangeOptions"></p-dropdown>
       </div>
       <div>
         <label class="block text-sm mb-1">Category</label>
-        <select class="border rounded p-2 w-full" [(ngModel)]="cfg.category">
-          <option value="spot">spot</option>
-          <option value="linear">linear</option>
-          <option value="usdt">usdt</option>
-        </select>
+        <p-dropdown class="w-full" [(ngModel)]="cfg.category" [options]="categoryOptions"></p-dropdown>
       </div>
       <div>
         <label class="block text-sm mb-1">Symbol</label>
-        <input class="border rounded p-2 w-full" [(ngModel)]="cfg.symbol">
+        <input pInputText class="w-full" [(ngModel)]="cfg.symbol">
       </div>
       <div>
         <label class="block text-sm mb-1">Timeframe</label>
-        <input class="border rounded p-2 w-full" [(ngModel)]="cfg.tf">
+        <input pInputText class="w-full" [(ngModel)]="cfg.tf">
       </div>
       <div>
         <label class="block text-sm mb-1">Limit</label>
-        <input type="number" class="border rounded p-2 w-full" [(ngModel)]="cfg.limit">
+        <p-inputNumber class="w-full" [(ngModel)]="cfg.limit"></p-inputNumber>
       </div>
       <div>
-        <button class="px-3 py-2 rounded bg-black text-white w-full" (click)="run()">Run</button>
+        <p-button label="Run" (onClick)="run()" severity="primary" class="w-full"></p-button>
       </div>
     </div>
 
@@ -56,6 +49,16 @@ export class BacktestComponent {
   api = inject(ApiService);
   cfg: any = { exchange: 'mock', category: 'spot', symbol: 'BTCUSDT', tf: '1m', limit: 500 };
   result = signal<any | null>(null);
+  exchangeOptions = [
+    { label: 'mock', value: 'mock' },
+    { label: 'bybit', value: 'bybit' },
+    { label: 'binance', value: 'binance' }
+  ];
+  categoryOptions = [
+    { label: 'spot', value: 'spot' },
+    { label: 'linear', value: 'linear' },
+    { label: 'usdt', value: 'usdt' }
+  ];
 
   async run() {
     this.result.set(await this.api.runBacktest(this.cfg));

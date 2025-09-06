@@ -1,15 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ThemeService } from './theme.service';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [NgIf],
+  imports: [NgIf, ButtonModule],
   template: `
-    <button type="button" (click)="theme.toggle()" class="toggle">
-      🌓 <span *ngIf="theme.current==='dark'">Dark</span><span *ngIf="theme.current==='light'">Light</span>
-    </button>
+    <p-button type="button" (onClick)="theme.toggle()" class="toggle" [label]="theme.current==='dark' ? '🌓 Dark' : '🌓 Light'"></p-button>
   `,
   styles: [`
     .toggle {

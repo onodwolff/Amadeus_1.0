@@ -11,12 +11,10 @@ import { MessageService } from 'primeng/api';
   imports: [CommonModule, FormsModule, PrimeNgModule],
   template: `
   <h2 class="mb-2">Strategies</h2>
-  <div class="mb-3">
-    <select [(ngModel)]="sid" class="border p-1 mr-2">
-      <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
-    </select>
-    <input [(ngModel)]="exchange" placeholder="exchange" class="border p-1 mr-2" />
-    <input [(ngModel)]="symbol" placeholder="symbol" class="border p-1 mr-2" />
+  <div class="mb-3 flex items-center gap-2">
+    <p-dropdown [options]="strategies" optionLabel="id" optionValue="id" [(ngModel)]="sid" class="mr-2"></p-dropdown>
+    <input pInputText [(ngModel)]="exchange" placeholder="exchange" class="mr-2" />
+    <input pInputText [(ngModel)]="symbol" placeholder="symbol" class="mr-2" />
     <p-button label="Start" (onClick)="start()"></p-button>
     <p-button label="Stop" (onClick)="stop()"></p-button>
   </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
 import { Subscription } from 'rxjs';
 import { WsService } from '../core/services/ws.service';
 import { ApiService } from '../core/services/api.service';
@@ -11,7 +12,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, CardModule],
+  imports: [CommonModule, FormsModule, ButtonModule, CardModule, InputTextModule],
   template: `
     <h1>Logs</h1>
     <div class="status" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
@@ -20,7 +21,7 @@ import { ActivatedRoute } from '@angular/router';
     </div>
     <p-card class="mt-2 p-3">
       <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <input [(ngModel)]="filter" placeholder="Filter"/>
+        <input pInputText [(ngModel)]="filter" placeholder="Filter"/>
         <p-button type="button" (onClick)="clear()" label="Clear"></p-button>
       </div>
       <pre #pane style="max-height:400px;overflow:auto;">{{ filtered.join('\n') }}</pre>
