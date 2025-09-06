@@ -45,10 +45,9 @@ export class ApiService {
   running$ = new BehaviorSubject<boolean>(false);
   setRunning(v: boolean) { this.running$.next(!!v); }
 
-  // status endpoint not available yet
-  start(body?: any) { return this.post('/start', body ?? {}); }
-  stop()  { return this.post('/stop', {}); }
-  cmd(command: string, payload: any = {}) { return this.post('/cmd', { cmd: command, ...payload }); }
+  getLogs(limit = 100) {
+    return this.get<{lines: string[]}>(`/observability/logs?limit=${limit}`);
+  }
 
   getConfig()         { return this.get('/config'); }
   putConfig(cfg: any) { return this.put('/config', cfg); }

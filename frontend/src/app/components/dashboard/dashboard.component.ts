@@ -84,11 +84,18 @@ export class DashboardComponent implements OnDestroy {
     );
   }
 
-  panicSell() {
+  async panicSell() {
     if (!window.confirm('Выполнить PANIC SELL?')) return;
-    this.api.cmd('x').subscribe({
-      next: _ => this.snack.open('Panic sell executed', 'OK', { duration: 2000 }),
-      error: err => this.snack.open(`Ошибка: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 })
-    });
+    const id = this.cfg?.id || this.cfg?.botId || this.cfg?.bot_id;
+    if (!id) {
+      this.snack.open('No active bot', 'OK', { duration: 2000 });
+      return;
+    }
+    try {
+      await this.api.stopBot(id);
+      this.snack.open('Panic sell executed', 'OK', { duration: 2000 });
+    } catch (err: any) {
+      this.snack.open(`Ошибка: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
   }
 }

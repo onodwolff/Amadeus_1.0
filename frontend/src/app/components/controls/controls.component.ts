@@ -17,6 +17,7 @@ export class ControlsComponent implements OnDestroy {
   busy = false;
   sub?: Subscription;
   autoRefreshSub?: Subscription;
+  botId?: string;
 
   constructor(private api: ApiService, private snack: MatSnackBar) {
     // глобальный стейт запуска бота
@@ -37,32 +38,37 @@ export class ControlsComponent implements OnDestroy {
   async doStart() {
     if (this.busy || this.running) return;
     this.busy = true;
-    this.api.start().subscribe({
-      next: _ => {
-        this.api.setRunning(true);
-        this.running = true;
-        this.snack.open('Старт', 'OK', { duration: 1200 });
-      },
-      error: err => {
-        this.snack.open(`Ошибка старта: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-      },
-      complete: () => { this.busy = false; }
-    });
+    try {
+      const res: any = await this.api.startBot({
+        strategy_id: 'sample_ema',
+        exchange: 'mock',
+        symbol: 'BTCUSDT',
+      });
+      this.botId = res?.id;
+      this.api.setRunning(true);
+      this.running = true;
+      this.snack.open('Старт', 'OK', { duration: 1200 });
+    } catch (err: any) {
+      this.snack.open(`Ошибка старта: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    } finally {
+      this.busy = false;
+    }
   }
 
   async doStop() {
     if (this.busy || !this.running) return;
+    if (!this.botId) return;
     this.busy = true;
-    this.api.stop().subscribe({
-      next: _ => {
-        this.api.setRunning(false);
-        this.running = false;
-        this.snack.open('Стоп', 'OK', { duration: 4000 });
-      },
-      error: err => {
-        this.snack.open(`Ошибка остановки: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-      },
-      complete: () => { this.busy = false; }
-    });
+    try {
+      await this.api.stopBot(this.botId);
+      this.api.setRunning(false);
+      this.running = false;
+      this.snack.open('Стоп', 'OK', { duration: 4000 });
+      this.botId = undefined;
+    } catch (err: any) {
+      this.snack.open(`Ошибка остановки: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    } finally {
+      this.busy = false;
+    }
   }
 }

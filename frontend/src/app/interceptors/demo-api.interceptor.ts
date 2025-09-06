@@ -16,9 +16,9 @@ export const demoApiInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, nex
   if (method === 'GET' && url.endsWith('/status')) {
     return of(json({ ok: true, running: true, ts: Date.now(), version: 'v0.1.0-demo' })).pipe(delay(lag));
   }
-  if (method === 'POST' && url.endsWith('/start')) return of(json({ ok: true, started: true })).pipe(delay(lag));
-  if (method === 'POST' && url.endsWith('/stop'))  return of(json({ ok: true, stopped: true })).pipe(delay(lag));
-  if (method === 'POST' && url.endsWith('/cmd'))   return of(json({ ok: true, result: 'ack' })).pipe(delay(lag));
+  if (method === 'GET' && url.startsWith('/observability/logs')) {
+    return of(json({ lines: ['demo log line'] })).pipe(delay(lag));
+  }
 
   if (method === 'GET' && url.endsWith('/config')) {
     return of(json({
