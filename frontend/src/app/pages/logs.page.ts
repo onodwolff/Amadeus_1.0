@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { WsService } from '../core/services/ws.service';
 import { ApiService } from '../core/services/api.service';
 
@@ -28,6 +29,8 @@ export class LogsPage {
   lines: string[] = [];
   filter = '';
   status = 'disconnected';
+  private msgSub?: Subscription;
+  private evtSub?: Subscription;
 
   constructor(private ws: WsService, private api: ApiService) {}
 
@@ -49,30 +52,46 @@ export class LogsPage {
         setTimeout(() => this.scrollBottom());
       }
     });
-    this.ws.messages$.subscribe(msg => {
-      if (msg?.type === 'error') {
-        const line = msg.message || 'WebSocket error';
-        this.lines.push(line);
-      } else {
-        const line = typeof msg === 'string' ? msg : JSON.stringify(msg);
-        this.lines.push(line);
-      }
-      setTimeout(() => this.scrollBottom());
-    });
-    this.ws.stream$.subscribe(evt => {
-      if (evt.type === 'open') this.status = 'connected';
-      else if (evt.type === 'close') this.status = 'closed';
-      else if (evt.type === 'error') {
-        this.status = 'error';
-        this.lines.push('Connection lost. Please retry.');
-      }
-    });
     this.retry();
   }
 
   retry() {
     this.status = 'connecting';
+    this.msgSub?.unsubscribe();
+    this.evtSub?.unsubscribe();
+
     const ws = this.ws.connect('logs');
+
+    this.msgSub = this.ws.messages$.subscribe({
+      next: (msg: any) => {
+        if (msg?.type === 'error') {
+          const line = msg.message || 'WebSocket error';
+          this.lines.push(line);
+        } else {
+          const line = typeof msg === 'string' ? msg : JSON.stringify(msg);
+          this.lines.push(line);
+        }
+        setTimeout(() => this.scrollBottom());
+      },
+      error: (err: any) => {
+        this.status = 'error';
+        this.lines.push(err?.message || 'WebSocket connection failed');
+        setTimeout(() => this.scrollBottom());
+      }
+    });
+
+    this.evtSub = this.ws.stream$.subscribe({
+      next: evt => {
+        if (evt.type === 'open') this.status = 'connected';
+        else if (evt.type === 'close') this.status = 'closed';
+      },
+      error: () => {
+        this.status = 'error';
+        this.lines.push('Connection lost. Please retry.');
+        setTimeout(() => this.scrollBottom());
+      }
+    });
+
     if (!ws) {
       this.status = 'error';
       this.lines.push('Failed to connect to log stream.');
