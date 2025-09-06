@@ -14,16 +14,19 @@ export class WsService {
   private get baseUrl(): string {
     if (this.baseOverride) return this.baseOverride;
 
-    const apiBase = String((environment as any).api || 'http://127.0.0.1:8100/api')
+    return String((environment as any).api || 'http://127.0.0.1:8100/api')
       .replace(/\/$/, '')
       .replace(/^http/, 'ws')
-      .replace(/\/api(?:\/.*)?$/, '/api/ws');
-
-    return apiBase.replace(/\/$/, '');
+      .replace(/\/api(?:\/.*)?$/, '/api/ws/');
   }
 
   setBaseUrl(url: string) {
-    this.baseOverride = url ? String(url).replace(/\/$/, '') : undefined;
+    this.baseOverride = url
+      ? String(url)
+          .replace(/\/$/, '')
+          .replace(/^http/, 'ws')
+          .replace(/\/api(?:\/.*)?$/, '/api/ws/')
+      : undefined;
   }
 
   connect(channel: string = ''): WebSocket | undefined {
@@ -52,8 +55,7 @@ export class WsService {
     if (this.messages$.isStopped) this.messages$ = new Subject<any>();
     if (this.stream$.isStopped) this.stream$ = new Subject<Event>();
 
-    const adj = channel ? '/' + String(channel).replace(/^\//, '') : '';
-    const url = this.baseUrl + adj;
+    const url = this.baseUrl + channel;
 
     if (this.socket) {
       try {
