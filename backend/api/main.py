@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
     backtest,
+    observability,
     risk,
     risk_ext,
     strategies,
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=ALLOWED_HEADERS,
 )
 
+app.include_router(observability.router, prefix="/api")
 app.include_router(trades.router, prefix="/api")
 app.include_router(risk_ext.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
