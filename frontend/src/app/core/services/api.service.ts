@@ -170,6 +170,21 @@ export class ApiService {
     return firstValueFrom(this.http.get(url, { headers: this.headers() }));
   }
 
+  listBots() {
+    const url = this.url('/bots');
+    return firstValueFrom(this.http.get<{items:any[]}>(url, { headers: this.headers() }));
+  }
+
+  startBot(body: any) {
+    const url = this.url('/bots');
+    return firstValueFrom(this.http.post(url, body, { headers: this.headers() }));
+  }
+
+  stopBot(id: string) {
+    const url = this.url(`/bots/${id}/stop`);
+    return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
+  }
+
   runBacktest(cfg: any) {
     const url = this.url('/backtest/run');
     return firstValueFrom(this.http.post(url, cfg, { headers: this.headers() }));

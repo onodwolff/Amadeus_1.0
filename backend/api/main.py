@@ -10,6 +10,7 @@ from .routers import (
     risk,
     risk_ext,
     strategies,
+    bots,
     strategy_analytics,
     strategy_export,
     trades,
@@ -49,6 +50,7 @@ app.include_router(risk_ext.router, prefix="/api")
 app.include_router(risk.router, prefix="/api")
 app.include_router(backtest.router, prefix="/api")
 app.include_router(strategies.router, prefix="/api")
+app.include_router(bots.router, prefix="/api")
 app.include_router(strategy_analytics.router, prefix="/api")
 app.include_router(strategy_export.router, prefix="/api")
 app.include_router(observability.router, prefix="/api")
