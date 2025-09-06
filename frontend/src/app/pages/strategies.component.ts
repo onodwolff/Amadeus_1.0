@@ -15,6 +15,8 @@ import { ApiService } from '../core/services/api.service';
     <select [(ngModel)]="sid" class="border p-1 mr-2">
       <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
     </select>
+    <input [(ngModel)]="exchange" placeholder="exchange" class="border p-1 mr-2" />
+    <input [(ngModel)]="symbol" placeholder="symbol" class="border p-1 mr-2" />
     <button class="btn" (click)="start()">Start</button>
     <button class="btn" (click)="stop()">Stop</button>
   </div>
@@ -23,6 +25,8 @@ import { ApiService } from '../core/services/api.service';
 export class StrategiesComponent implements OnInit {
   strategies: { id: string; running: boolean }[] = [];
   sid = '';
+  exchange = 'mock';
+  symbol = '';
 
   constructor(private api: ApiService, private snack: MatSnackBar) {}
 
@@ -42,9 +46,13 @@ export class StrategiesComponent implements OnInit {
   }
 
   async start() {
-    const cfg = { symbol: 'BTCUSDT', tf: '1m', fast: 9, slow: 21, qty: 0.001 };
     try {
-      await this.api.startStrategy(this.sid, cfg);
+      await this.api.startBot({
+        strategy_id: this.sid,
+        exchange: this.exchange,
+        symbol: this.symbol,
+      });
+      await this.loadStrategies();
     } catch (err: any) {
       this.snack.open(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }
@@ -52,7 +60,19 @@ export class StrategiesComponent implements OnInit {
 
   async stop() {
     try {
-      await this.api.stopStrategy(this.sid);
+      const bots = await this.api.listBots();
+      const bot = bots.items?.find(
+        (b: any) =>
+          b.strategy_id === this.sid &&
+          b.exchange === this.exchange &&
+          b.symbol === this.symbol,
+      );
+      if (bot) {
+        await this.api.stopBot(bot.id);
+        await this.loadStrategies();
+      } else {
+        this.snack.open('Bot not found', 'OK', { duration: 2500 });
+      }
     } catch (err: any) {
       this.snack.open(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }

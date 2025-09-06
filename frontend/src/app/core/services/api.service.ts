@@ -90,16 +90,6 @@ export class ApiService {
     return firstValueFrom(this.http.get(url, { headers: this.headers() }));
   }
 
-  startStrategy(id: string, cfg: any) {
-    const url = this.url(`/strategies/${id}/start`);
-    return firstValueFrom(this.http.post(url, cfg, { headers: this.headers() }));
-  }
-
-  stopStrategy(id: string) {
-    const url = this.url(`/strategies/${id}/stop`);
-    return firstValueFrom(this.http.post(url, {}, { headers: this.headers() }));
-  }
-
   async getStrategyReport(
     id: string,
     exchange: string,

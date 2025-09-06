@@ -46,6 +46,14 @@ import { firstValueFrom } from 'rxjs';
               }
             </select>
           </div>
+          <div>
+            <label class="block text-sm mb-1">Exchange</label>
+            <input class="border rounded p-2 w-full" [(ngModel)]="exchange" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Symbol</label>
+            <input class="border rounded p-2 w-full" [(ngModel)]="symbol" />
+          </div>
           <div class="col-span-2">
             <app-json-schema-form [schema]="schema()" [(model)]="cfg"></app-json-schema-form>
           </div>
@@ -66,6 +74,8 @@ export class StrategiesComponent {
   cfg: any = {};
   schema = signal<any>({type:'object', properties:{}});
   api = inject(ApiService);
+  exchange = 'mock';
+  symbol = '';
 
   async ngOnInit() {
     await this.refresh();
@@ -114,7 +124,12 @@ export class StrategiesComponent {
   async create() {
     if (!this.sid) return;
     try {
-      await this.api.startStrategy(this.sid, this.cfg);
+      await this.api.startBot({
+        strategy_id: this.sid,
+        exchange: this.exchange,
+        symbol: this.symbol,
+        ...this.cfg,
+      });
       this.openCreate = false;
       await this.refresh();
     } catch (err:any) {
