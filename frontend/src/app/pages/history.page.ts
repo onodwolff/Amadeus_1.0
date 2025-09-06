@@ -1,16 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { OrderHistoryItem, TradeHistoryItem } from '../models';
 import { ApiService } from '../core/services/api.service';
 
 @Component({
     selector: 'app-history',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     template: `
         <h1>History</h1>
         <div class="section">
             <h2>Orders</h2>
+            <div class="filters">
+                <input [(ngModel)]="orderSymbol" placeholder="Symbol" />
+                <select [(ngModel)]="orderSide">
+                    <option value="">All Sides</option>
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+            </div>
             <table class="tbl">
                 <tr>
                     <th>Time</th>
@@ -19,7 +28,7 @@ import { ApiService } from '../core/services/api.service';
                     <th>Price</th>
                     <th>Qty</th>
                 </tr>
-                <tr *ngFor="let o of orders">
+                <tr *ngFor="let o of filteredOrders">
                     <td>{{ o.ts * 1000 | date:'medium' }}</td>
                     <td>{{ o.symbol }}</td>
                     <td>{{ o.side }}</td>
@@ -35,6 +44,14 @@ import { ApiService } from '../core/services/api.service';
 
         <div class="section">
             <h2>Trades</h2>
+            <div class="filters">
+                <input [(ngModel)]="tradeSymbol" placeholder="Symbol" />
+                <select [(ngModel)]="tradeSide">
+                    <option value="">All Sides</option>
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+            </div>
             <table class="tbl">
                 <tr>
                     <th>Time</th>
@@ -43,7 +60,7 @@ import { ApiService } from '../core/services/api.service';
                     <th>Price</th>
                     <th>Qty</th>
                 </tr>
-                <tr *ngFor="let t of trades">
+                <tr *ngFor="let t of filteredTrades">
                     <td>{{ t.ts * 1000 | date:'medium' }}</td>
                     <td>{{ t.symbol }}</td>
                     <td>{{ t.side }}</td>
@@ -64,6 +81,10 @@ export class HistoryPage implements OnInit {
     tradeOffset = 0;
     orders: OrderHistoryItem[] = [];
     trades: TradeHistoryItem[] = [];
+    orderSymbol = '';
+    orderSide = '';
+    tradeSymbol = '';
+    tradeSide = '';
 
     constructor(private api: ApiService) {}
 
@@ -102,5 +123,23 @@ export class HistoryPage implements OnInit {
     prevTrades() {
         this.tradeOffset = Math.max(0, this.tradeOffset - this.limit);
         this.loadTrades();
+    }
+
+    get filteredOrders(): OrderHistoryItem[] {
+        const sym = this.orderSymbol.toLowerCase();
+        const side = this.orderSide.toLowerCase();
+        return this.orders.filter(o =>
+            (!sym || o.symbol.toLowerCase().includes(sym)) &&
+            (!side || o.side.toLowerCase() === side)
+        );
+    }
+
+    get filteredTrades(): TradeHistoryItem[] {
+        const sym = this.tradeSymbol.toLowerCase();
+        const side = this.tradeSide.toLowerCase();
+        return this.trades.filter(t =>
+            (!sym || t.symbol.toLowerCase().includes(sym)) &&
+            (!side || t.side.toLowerCase() === side)
+        );
     }
 }
