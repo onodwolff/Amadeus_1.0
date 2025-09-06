@@ -24,14 +24,9 @@ import { ApiService } from '../../core/services/api.service';
         <span class="badge" [class.ok]="s.running" [class.err]="!s.running">{{ s.running ? 'running' : 'stopped' }}</span>
       </div>
       <div class="flex items-center gap-3 mt-3">
-        <button class="btn" title="Start" (click)="start(s.id); $event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">
-          {{ loading()[s.id] ? '⏳' : '▶' }}
-        </button>
-        <button class="btn" title="Stop" (click)="stop(s.id); $event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">
-          {{ loading()[s.id] ? '⏳' : '⏸' }}
-        </button>
-        <button class="btn" title="Edit config" (click)="$event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">⚙</button>
-        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()" [disabled]="loading()[s.id]">🧾</button>
+        <button class="btn" title="Edit" (click)="edit.emit(s.id); $event.preventDefault(); $event.stopPropagation()">⚙</button>
+        <button class="btn" title="Delete" (click)="remove.emit(s.id); $event.preventDefault(); $event.stopPropagation()">🗑</button>
+        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()">🧾</button>
       </div>
     </a>
   </div>
@@ -43,9 +38,10 @@ export class StrategiesModernComponent implements OnInit {
 
   @Output() create = new EventEmitter<void>();
   @Output() importCfg = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<string>();
+  @Output() remove = new EventEmitter<string>();
 
   items = signal<{id: string; running: boolean}[]>([]);
-  loading = signal<Record<string, boolean>>({});
 
   async ngOnInit() {
     await this.refresh();
@@ -57,36 +53,6 @@ export class StrategiesModernComponent implements OnInit {
       this.items.set(list);
     } catch (err: any) {
       this.snack.open(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-    }
-  }
-
-  private setLoading(id: string, v: boolean) {
-    const l = { ...this.loading() };
-    l[id] = v;
-    this.loading.set(l);
-  }
-
-  async start(id: string) {
-    this.setLoading(id, true);
-    try {
-      await this.api.startStrategy(id, {});
-      await this.refresh();
-    } catch (err: any) {
-      this.snack.open(`Start failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-    } finally {
-      this.setLoading(id, false);
-    }
-  }
-
-  async stop(id: string) {
-    this.setLoading(id, true);
-    try {
-      await this.api.stopStrategy(id);
-      await this.refresh();
-    } catch (err: any) {
-      this.snack.open(`Stop failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
-    } finally {
-      this.setLoading(id, false);
     }
   }
 }
