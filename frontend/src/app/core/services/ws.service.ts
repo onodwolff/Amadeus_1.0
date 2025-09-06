@@ -13,9 +13,10 @@ export class WsService {
   public status$ = new BehaviorSubject<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
 
   private computeBase(url?: string): string {
-    return String(url || 'http://127.0.0.1:8100/api')
+    const root = String(url || 'http://127.0.0.1:8100')
       .replace(/\/$/, '')
-      .replace(/^http/, 'ws') + '/ws';
+      .replace(/\/api$/, '');
+    return root.replace(/^http/, 'ws') + '/api/ws';
   }
 
   private get baseUrl(): string {

@@ -55,8 +55,8 @@ export class LogsPage {
     });
 
     this.statusSub = this.ws.status$.subscribe(s => this.status = s);
-    this.errSub = this.ws.errors$.subscribe(err => {
-      this.lines.push(err?.message || 'WebSocket connection failed');
+    this.errSub = this.ws.errors$.subscribe(() => {
+      this.lines.push('Log stream unavailable');
       setTimeout(() => this.scrollBottom());
     });
     this.msgSub = this.ws.messages$.subscribe((msg: any) => {
@@ -72,7 +72,7 @@ export class LogsPage {
     this.status = 'connecting';
     const ws = this.ws.connect('logs');
     if (!ws) {
-      this.lines.push('Failed to connect to log stream.');
+      this.lines.push('Log stream unavailable');
       setTimeout(() => this.scrollBottom());
     }
   }
