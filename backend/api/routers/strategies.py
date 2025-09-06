@@ -1,55 +1,80 @@
-from fastapi import APIRouter, Depends
-from typing import Dict, Any
+from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, SQLModel, select
+
 from backend.api.deps import require_token
 from backend.core.db import get_session
-from backend.core.models import OrderRow
-from backend.core.risk import RISK_ENGINE
-from backend.adapters.registry import get_adapter
-from sqlmodel import Session
-import time, random, string
+from backend.core.models import StrategyRow
+
+
+class StrategyCreate(SQLModel):
+    name: str
+    config: dict
+    risk_policy: str
+
+
+class StrategyUpdate(SQLModel):
+    config: Optional[dict] = None
+    risk_policy: Optional[str] = None
+
 
 router = APIRouter(prefix="/strategies", tags=["strategies"])
 
-# NOTE: this is a minimal placeholder; wire it to your real strategy registry
-_registry = {"sample_ema_crossover": {"schema": {"type":"object","properties":{"symbol":{"type":"string","default":"BTCUSDT"},"short":{"type":"integer","default":12},"long":{"type":"integer","default":26},"qty":{"type":"number","default":0.01},"exchange":{"type":"string","default":"binance"},"category":{"type":"string","default":"usdt"}}}}}
-# backwards compatibility alias
-_registry["sample_ema"] = _registry["sample_ema_crossover"]
-_running: Dict[str, Any] = {}
-
-def _gen_cid(prefix: str) -> str:
-    suf = ''.join(random.choice(string.ascii_lowercase+string.digits) for _ in range(6))
-    return f"{prefix}-{int(time.time()*1000)}-{suf}"
 
 @router.get("")
-async def list_strategies(_=Depends(require_token)):
-    return [{"id": k, "running": k in _running} for k in _registry.keys()]
+def list_strategies(session: Session = Depends(get_session), _=Depends(require_token)):
+    return session.exec(select(StrategyRow)).all()
 
-@router.get("/{sid}/schema")
-async def get_schema(sid: str, _=Depends(require_token)):
-    return _registry[sid]["schema"]
 
-@router.post("/{sid}/start")
-async def start(sid: str, cfg: Dict[str, Any], session: Session = Depends(get_session), _=Depends(require_token)):
-    if sid in _running:
-        return {"ok": True, "already": True}
-    exchange = cfg.get("exchange","mock")
-    category = cfg.get("category","spot")
-    symbol = cfg.get("symbol","BTCUSDT")
-    adapter = get_adapter(exchange, category)
-
-    # simulate one order placement to show clientOrderId tagging & persistence
-    req = {"symbol": symbol, "side":"buy", "type":"limit", "qty": cfg.get("qty",0.01), "price": None, "client_order_id": _gen_cid(sid)}
-    ack = await adapter.place_order(type("Req",(object,),req)())
-    order_row = OrderRow(
-        order_id=str(getattr(ack, "order_id", getattr(ack, "id", ""))),
-        client_order_id=req["client_order_id"], symbol=symbol, side="buy", qty=req["qty"],
-        price=None, status="new", exchange=exchange, category=category, strategy_id=sid
+@router.post("", response_model=StrategyRow)
+def create_strategy(
+    payload: StrategyCreate,
+    session: Session = Depends(get_session),
+    _=Depends(require_token),
+):
+    row = StrategyRow(
+        name=payload.name,
+        config=payload.config,
+        risk_policy=payload.risk_policy,
     )
-    session.add(order_row); session.commit()
-    _running[sid] = {"cfg": cfg}
-    return {"ok": True, "order_client_id": req["client_order_id"]}
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
 
-@router.post("/{sid}/stop")
-async def stop(sid: str, _=Depends(require_token)):
-    _running.pop(sid, None)
+
+@router.put("/{strategy_id}", response_model=StrategyRow)
+def update_strategy(
+    strategy_id: int,
+    payload: StrategyUpdate,
+    session: Session = Depends(get_session),
+    _=Depends(require_token),
+):
+    row = session.get(StrategyRow, strategy_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    if payload.config is not None:
+        row.config = payload.config
+    if payload.risk_policy is not None:
+        row.risk_policy = payload.risk_policy
+    row.updated_at = datetime.utcnow()
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+
+@router.delete("/{strategy_id}")
+def delete_strategy(
+    strategy_id: int,
+    session: Session = Depends(get_session),
+    _=Depends(require_token),
+):
+    row = session.get(StrategyRow, strategy_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    session.delete(row)
+    session.commit()
     return {"ok": True}
