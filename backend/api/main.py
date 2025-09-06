@@ -15,6 +15,7 @@ from .routers import (
     strategy_export,
     trades,
     observability,
+    ws_logs,
 )
 
 app = FastAPI(title="Amadeus API (patch v12 mega)")
@@ -54,6 +55,7 @@ app.include_router(bots.router, prefix="/api")
 app.include_router(strategy_analytics.router, prefix="/api")
 app.include_router(strategy_export.router, prefix="/api")
 app.include_router(observability.router, prefix="/api")
+app.include_router(ws_logs.router, prefix="/api")
 
 
 @app.get("/healthz")
