@@ -30,6 +30,12 @@ import { firstValueFrom } from 'rxjs';
               <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm mb-1">Risk Policy</label>
+            <select class="border rounded p-2 w-full" [(ngModel)]="riskPolicy">
+              <option *ngFor="let r of riskPolicies" [value]="r">{{ r }}</option>
+            </select>
+          </div>
           <div class="col-span-2">
             <app-json-schema-form [schema]="schema" [(model)]="cfg"></app-json-schema-form>
           </div>
@@ -80,12 +86,15 @@ export class StrategiesPage {
   schema: any = { type: 'object', properties: {} };
   cfg: any = {};
   importedCfg: any = {};
+  riskPolicies: string[] = [];
+  riskPolicy = '';
 
   async onCreate() {
     this.editing = false;
     this.cfg = {};
     this.openCreate = true;
     await this.loadStrategies();
+    await this.loadRiskPolicies();
     await this.loadSchema();
   }
 
@@ -99,9 +108,12 @@ export class StrategiesPage {
     this.sid = id;
     this.openCreate = true;
     await this.loadStrategies();
+    await this.loadRiskPolicies();
     await this.loadSchema();
     try {
-      this.cfg = await firstValueFrom(this.api.get(`/strategies/${id}`));
+      const res: any = await firstValueFrom(this.api.get(`/strategies/${id}`));
+      this.cfg = res.config || {};
+      this.riskPolicy = res.risk_policy || this.riskPolicy;
     } catch (err: any) {
       this.snack.open(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }
@@ -131,7 +143,15 @@ export class StrategiesPage {
 
   async submitSave() {
     try {
-      await firstValueFrom(this.api.put(`/strategies/${this.sid}`, this.cfg));
+      if (this.editing) {
+        await firstValueFrom(
+          this.api.put(`/strategies/${this.sid}`, { config: this.cfg, risk_policy: this.riskPolicy })
+        );
+      } else {
+        await firstValueFrom(
+          this.api.post('/strategies', { name: this.sid, config: this.cfg, risk_policy: this.riskPolicy })
+        );
+      }
       this.openCreate = false;
       this.editing = false;
       await this.list?.refresh();
@@ -156,12 +176,21 @@ export class StrategiesPage {
 
   async submitImport() {
     try {
-      await firstValueFrom(this.api.put(`/strategies/${this.sid}`, this.importedCfg || {}));
+      await firstValueFrom(
+        this.api.put(`/strategies/${this.sid}`, { config: this.importedCfg || {}, risk_policy: this.riskPolicy })
+      );
       this.openImport = false;
       this.importedCfg = {};
       await this.list?.refresh();
     } catch (err: any) {
       this.snack.open(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
+  }
+
+  private async loadRiskPolicies() {
+    this.riskPolicies = await this.api.getRiskPolicies();
+    if (!this.riskPolicy && this.riskPolicies.length) {
+      this.riskPolicy = this.riskPolicies[0];
     }
   }
 }

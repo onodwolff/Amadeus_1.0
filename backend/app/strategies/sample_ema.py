@@ -10,9 +10,19 @@ class SampleEMAStrategy(StrategyPlugin):
             "tf": {"type": "string", "default": "1m"},
             "fast": {"type": "integer", "default": 9, "minimum": 2},
             "slow": {"type": "integer", "default": 21, "minimum": 3},
-            "qty": {"type": "number", "default": 0.001, "exclusiveMinimum": 0}
+            "qty": {"type": "number", "default": 0.001, "exclusiveMinimum": 0},
+            "exchange": {"type": "string", "default": "binance"},
+            "category": {"type": "string", "default": "spot"},
         },
-        "required": ["symbol","fast","slow","qty","tf"]
+        "required": [
+            "symbol",
+            "fast",
+            "slow",
+            "qty",
+            "tf",
+            "exchange",
+            "category",
+        ]
     }
 
     async def init(self, ctx: StrategyContext, config: dict) -> None:

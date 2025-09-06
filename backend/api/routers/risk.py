@@ -11,6 +11,10 @@ router = APIRouter(prefix="/risk", tags=["risk"])
 # Simple policy management used by tests
 # ---------------------------------------------------------------------------
 
+@router.get("/policies")
+def list_policies():
+    return list(RISK_ENGINE.policies.keys())
+
 @router.get("/policies/{sid}")
 def get_policy(sid: str):
     return RISK_ENGINE.policies.get(sid) or {"max_active_orders": 50, "max_dd": 0.5}
