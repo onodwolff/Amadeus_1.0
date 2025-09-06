@@ -13,14 +13,13 @@ export class WsService {
   public status$ = new BehaviorSubject<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
 
   private computeBase(url?: string): string {
-    const root = String(url || 'http://127.0.0.1:8100')
+    return String(url || 'http://127.0.0.1:8100/api/ws')
       .replace(/\/$/, '')
-      .replace(/\/api$/, '');
-    return root.replace(/^http/, 'ws') + '/api/ws';
+      .replace(/^http/, 'ws');
   }
 
   private get baseUrl(): string {
-    return this.baseOverride || this.computeBase((environment as any).api);
+    return this.baseOverride || this.computeBase((environment as any).ws);
   }
 
   setBaseUrl(url: string) {
