@@ -15,7 +15,9 @@ import { firstValueFrom } from 'rxjs';
       <input class="border rounded p-2 w-full" [(ngModel)]="symbol" placeholder="symbol (e.g. BTCUSDT)">
       <input class="border rounded p-2 w-full" [(ngModel)]="exchange" placeholder="exchange (binance/bybit)">
       <input class="border rounded p-2 w-full" [(ngModel)]="category" placeholder="category (spot/usdt/linear)">
-      <input class="border rounded p-2 w-full" [(ngModel)]="strategy_id" placeholder="strategy id">
+      <select class="border rounded p-2 w-full" [(ngModel)]="strategy_id">
+        <option *ngFor="let s of strategies" [value]="s.id">{{ s.id }}</option>
+      </select>
       <button class="px-3 py-2 rounded bg-black text-white" (click)="load()">Load</button>
     </div>
     <div class="mb-3">
@@ -35,7 +37,23 @@ import { firstValueFrom } from 'rxjs';
 export class TradesComponent {
   api = inject(ApiService);
   symbol=''; exchange=''; category=''; strategy_id='';
+  strategies: {id: string; running: boolean}[] = [];
   items = signal<any[]>([]);
+
+  async ngOnInit() {
+    await this.loadStrategies();
+  }
+
+  private async loadStrategies() {
+    try {
+      this.strategies = await this.api.listStrategies();
+      if (!this.strategy_id && this.strategies.length) {
+        this.strategy_id = this.strategies[0].id;
+      }
+    } catch (err) {
+      console.error('Failed to load strategies', err);
+    }
+  }
   async load() {
     const params = new URLSearchParams();
     if (this.symbol) params.set('symbol', this.symbol);

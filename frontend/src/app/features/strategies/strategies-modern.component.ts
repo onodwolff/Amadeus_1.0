@@ -37,6 +37,7 @@ import { ApiService } from '../../core/services/api.service';
         <div class="font-medium">Last Fills</div>
         <div *ngFor="let f of s.fills">{{ f.side }} {{ f.qty }} @ {{ f.price }}</div>
       </div>
+      <div class="text-xs text-red-600 mt-2" *ngIf="s.error">{{ s.error }}</div>
       <div class="flex items-center gap-3 mt-3">
         <button class="btn" title="Edit" (click)="edit.emit(s.id); $event.preventDefault(); $event.stopPropagation()">⚙</button>
         <button class="btn" title="Delete" (click)="remove.emit(s.id); $event.preventDefault(); $event.stopPropagation()">🗑</button>
@@ -55,7 +56,7 @@ export class StrategiesModernComponent implements OnInit {
   @Output() edit = new EventEmitter<string>();
   @Output() remove = new EventEmitter<string>();
 
-  items = signal<{id: string; running: boolean; report?: any; fills?: any[]}[]>([]);
+  items = signal<{id: string; running: boolean; report?: any; fills?: any[]; error?: string}[]>([]);
   exchange = 'binance';
   category = 'usdt';
   symbol = 'BTCUSDT';
@@ -78,9 +79,11 @@ export class StrategiesModernComponent implements OnInit {
             );
             s.report = res.report;
             s.fills = res.fills;
+            s.error = null;
           } catch {
             s.report = null;
             s.fills = [];
+            s.error = 'Data not available';
           }
         }),
       );
