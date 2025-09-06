@@ -6,29 +6,20 @@ import { environment } from '../../../environments/environment';
 export class WsService {
   private socket?: WebSocket;
   private stop$ = new Subject<void>();
-  private win: any = (globalThis as any);
   private baseOverride?: string;
 
-  public readonly messages$ = new Subject<any>();
-  public readonly stream$ = new Subject<Event>();
+  public messages$ = new Subject<any>();
+  public stream$ = new Subject<Event>();
 
   private get baseUrl(): string {
     if (this.baseOverride) return this.baseOverride;
 
-    const envAny: any = environment as any;
-    const apiConf = envAny.api;
-    const httpBase: string =
-      this.win.__API__ ||
-      (typeof apiConf === 'string' ? apiConf : apiConf?.baseUrl) ||
-      'http://127.0.0.1:8100/api';
+    const apiBase = String((environment as any).api || 'http://127.0.0.1:8100/api')
+      .replace(/\/$/, '')
+      .replace(/^http/, 'ws')
+      .replace(/\/api(?:\/.*)?$/, '/api/ws');
 
-    const apiRoot = String(httpBase).replace(/\/$/, '');
-    const derived =
-      apiRoot
-        .replace(/\/api(?:\/.*)?$/, '') +
-      '/api/ws';
-    const wsBase = this.win.__WS__ || derived;
-    return String(wsBase).replace(/\/$/, '');
+    return apiBase.replace(/\/$/, '');
   }
 
   setBaseUrl(url: string) {
@@ -44,46 +35,61 @@ export class WsService {
       interval(800).pipe(takeUntil(this.stop$)).subscribe(() => {
         const chg = (Math.random() - 0.5) * 20;
         last = Math.max(100, last + chg);
-        const msg = { type:'trade', symbol:'BTCUSDT', ts: Date.now(), side: chg >= 0 ? 'buy' : 'sell', price: +last.toFixed(2), qty: +(Math.random()*0.5+0.01).toFixed(3) };
+        const msg = {
+          type: 'trade',
+          symbol: 'BTCUSDT',
+          ts: Date.now(),
+          side: chg >= 0 ? 'buy' : 'sell',
+          price: +last.toFixed(2),
+          qty: +(Math.random() * 0.5 + 0.01).toFixed(3),
+        };
         this.messages$.next(msg);
       });
       return undefined;
     }
 
+    // reset subjects on reconnect so errors propagate again
+    if (this.messages$.isStopped) this.messages$ = new Subject<any>();
+    if (this.stream$.isStopped) this.stream$ = new Subject<Event>();
+
     const adj = channel ? '/' + String(channel).replace(/^\//, '') : '';
-    const base = this.baseUrl.replace(/^http/, 'ws');
-    const url = base + adj;
+    const url = this.baseUrl + adj;
 
     if (this.socket) {
-      try { this.socket.close(); } catch {}
+      try {
+        this.socket.close();
+      } catch {}
     }
 
     let ws: WebSocket;
     try {
       ws = new WebSocket(url);
     } catch (err) {
-      const evt = new Event('error');
-      this.stream$.next(evt);
-      this.messages$.next({ type: 'error', message: 'WebSocket connection failed', error: err });
+      this.stream$.error(err as any);
+      this.messages$.error(err);
       return undefined;
     }
     this.socket = ws;
 
     ws.onopen = (evt) => this.stream$.next(evt);
     ws.onclose = (evt) => {
-      this.stream$.next(evt);
-      if (!evt.wasClean) {
-        this.messages$.next({ type: 'error', message: `WebSocket closed: ${evt.code}` });
+      if (evt.wasClean) this.stream$.next(evt);
+      else {
+        this.stream$.error(evt as any);
+        this.messages$.error(new Error(`WebSocket closed: ${evt.code}`));
       }
     };
     ws.onerror = (evt) => {
-      this.stream$.next(evt as any);
-      this.messages$.next({ type: 'error', message: 'Connection lost. Please retry.', event: evt });
+      this.stream$.error(evt as any);
+      this.messages$.error(new Error('Connection lost. Please retry.'));
     };
     ws.onmessage = (evt) => {
       this.stream$.next(evt);
-      try { this.messages$.next(JSON.parse(evt.data)); }
-      catch { this.messages$.next(evt.data); }
+      try {
+        this.messages$.next(JSON.parse(evt.data));
+      } catch {
+        this.messages$.next(evt.data);
+      }
     };
 
     return ws;
@@ -98,6 +104,12 @@ export class WsService {
 
   close() {
     this.stop$.next();
-    if (this.socket) { try { this.socket.close(); } finally { this.socket = undefined; } }
+    if (this.socket) {
+      try {
+        this.socket.close();
+      } finally {
+        this.socket = undefined;
+      }
+    }
   }
 }
