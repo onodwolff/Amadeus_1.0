@@ -56,8 +56,7 @@ export class PortfolioComponent {
   async ngOnInit() {
     this.balances.set(await this.api.getBalances());
     this.positions.set(await this.api.getPositions());
-    const base = (window as any).__WS__ || 'ws://localhost:8000/api/portfolio/ws';
-    this.ws.connect(`${base}/fills`);
+    this.ws.connect('portfolio/fills');
     this.ws.messages$.subscribe((m) => {
       if (m?.type === 'fill') {
         this.liveFills.update(arr => (arr.length>200? arr.slice(-200):arr).concat(m));
