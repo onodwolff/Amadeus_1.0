@@ -10,19 +10,19 @@ import { ApiService } from '../../core/services/api.service';
   selector: 'app-strategies-modern',
   imports: [CommonModule, RouterModule, PrimeNgModule],
   template: `
-  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-semibold">Strategies</h2>
     <div class="flex gap-2">
-      <button class="btn primary" title="Create new strategy (Ctrl+N)" (click)="create.emit()">New</button>
-      <button class="btn" title="Import config JSON" (click)="importCfg.emit()">Import</button>
+      <p-button label="New" (onClick)="create.emit()" severity="primary" title="Create new strategy (Ctrl+N)"></p-button>
+      <p-button label="Import" (onClick)="importCfg.emit()" title="Import config JSON"></p-button>
     </div>
   </div>
   <div class="grid lg:grid-cols-3 gap-3">
     <ng-container *ngFor="let s of items()">
-      <a *ngIf="s.error !== 'Strategy not found'; else missing" class="card p-4 block" [routerLink]="['/strategies', s.id]">
+      <p-card *ngIf="s.error !== 'Strategy not found'; else missing" class="p-4 block" [routerLink]="['/strategies', s.id]">
         <div class="flex items-center justify-between">
           <div class="font-medium">{{ s.id }}</div>
-          <span class="badge" [class.ok]="s.running" [class.err]="!s.running">{{ s.running ? 'running' : 'stopped' }}</span>
+          <p-badge [value]="s.running ? 'running' : 'stopped'" [severity]="s.running ? 'success' : 'danger'"></p-badge>
         </div>
         <div class="grid grid-cols-2 gap-1 text-xs mt-3" *ngIf="s.report">
           <div>Sharpe: {{ s.report.sharpe | number:'1.2-2' }}</div>
@@ -38,21 +38,21 @@ import { ApiService } from '../../core/services/api.service';
           <div class="font-medium">Last Fills</div>
           <div *ngFor="let f of s.fills">{{ f.side }} {{ f.qty }} @ {{ f.price }}</div>
         </div>
-        <div class="text-xs text-red-600 mt-2" *ngIf="s.error && s.error !== 'Strategy not found'">{{ s.error }}</div>
+        <div class="text-xs mt-2" *ngIf="s.error && s.error !== 'Strategy not found'">{{ s.error }}</div>
         <div class="flex items-center gap-3 mt-3">
-          <button class="btn" title="Edit" (click)="edit.emit(s.id); $event.preventDefault(); $event.stopPropagation()">⚙</button>
-          <button class="btn" title="Delete" (click)="remove.emit(s.id); $event.preventDefault(); $event.stopPropagation()">🗑</button>
-          <button class="btn" title="Logs" (click)="showLogs(s.id); $event.preventDefault(); $event.stopPropagation()">🧾</button>
+          <p-button label="⚙" (onClick)="edit.emit(s.id); $event.preventDefault(); $event.stopPropagation()" title="Edit"></p-button>
+          <p-button label="🗑" (onClick)="remove.emit(s.id); $event.preventDefault(); $event.stopPropagation()" title="Delete"></p-button>
+          <p-button label="🧾" (onClick)="showLogs(s.id); $event.preventDefault(); $event.stopPropagation()" title="Logs"></p-button>
         </div>
-      </a>
+      </p-card>
       <ng-template #missing>
-        <div class="card p-4">
+        <p-card class="p-4">
           <div class="font-medium">{{ s.id || 'Unknown' }}</div>
-          <div class="text-xs text-red-600 mt-2">Strategy not found</div>
+          <div class="text-xs mt-2">Strategy not found</div>
           <div class="flex items-center gap-3 mt-3">
-            <button class="btn" (click)="create.emit()">Create</button>
+            <p-button label="Create" (onClick)="create.emit()"></p-button>
           </div>
-        </div>
+        </p-card>
       </ng-template>
     </ng-container>
   </div>

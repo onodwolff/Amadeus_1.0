@@ -5,11 +5,13 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
+import { CardModule } from 'primeng/card';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ToastModule, ButtonModule, TableModule, InputTextModule],
+  imports: [CommonModule, ToastModule, ButtonModule, TableModule, InputTextModule, CardModule, BadgeModule],
   providers: [MessageService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']

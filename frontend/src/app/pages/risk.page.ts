@@ -13,19 +13,19 @@ import { ToastService } from '../shared/ui/toast.service';
   template: `
     <h1>Risk</h1>
 
-    <div class="card" style="padding:12px;margin-top:8px;">
+    <p-card class="mt-2">
       <div *ngIf="loadingStatus">Загрузка статуса...</div>
       <ng-container *ngIf="!loadingStatus">
         <div class="row">
           <div class="chip" [class.on]="status?.allowed">Entries: {{ status?.allowed ? 'ALLOWED' : 'BLOCKED' }}</div>
-          <button class="btn" (click)="refreshStatus()">Обновить</button>
-          <button class="btn warn" (click)="unlock()" *ngIf="!status?.allowed">Снять блокировки</button>
+          <p-button label="Обновить" (onClick)="refreshStatus()"></p-button>
+          <p-button label="Снять блокировки" (onClick)="unlock()" *ngIf="!status?.allowed" severity="warning"></p-button>
         </div>
         <div class="muted" *ngIf="status?.reason">Reason: {{ status?.reason }}</div>
       </ng-container>
-    </div>
+    </p-card>
 
-    <div class="card" style="padding:12px;margin-top:8px;">
+    <p-card class="mt-2">
       <div *ngIf="loadingPolicies">Загрузка политик...</div>
       <ng-container *ngIf="!loadingPolicies">
         <form [formGroup]="policiesForm">
@@ -36,13 +36,13 @@ import { ToastService } from '../shared/ui/toast.service';
           </label>
         </form>
         <div class="muted" *ngIf="!policies.length">Политики не найдены</div>
-        <div class="row" style="margin-top:8px;">
-          <button class="btn" type="button" (click)="refreshPolicies()">Обновить</button>
+        <div class="row mt-2">
+          <p-button label="Обновить" type="button" (onClick)="refreshPolicies()"></p-button>
         </div>
       </ng-container>
-    </div>
+    </p-card>
 
-    <div class="card" style="padding:12px;margin-top:8px;">
+    <p-card class="mt-2">
       <form [formGroup]="limitsForm" (ngSubmit)="save()">
         <div *ngIf="loadingLimits">Загрузка лимитов...</div>
         <div *ngIf="!loadingLimits">
@@ -72,10 +72,10 @@ import { ToastService } from '../shared/ui/toast.service';
               <input type="number" formControlName="max_loss_usd" />
             </label>
           </div>
-          <button class="btn primary" type="submit" [disabled]="loadingLimits">Сохранить</button>
+          <p-button label="Сохранить" type="submit" [disabled]="loadingLimits" severity="primary"></p-button>
         </div>
       </form>
-    </div>
+    </p-card>
   `
 })
 export class RiskPage {

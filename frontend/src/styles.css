@@ -41,12 +41,6 @@ a, .link {
   color: var(--accent);
 }
 
-.card {
-  background: var(--surface);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow);
-}
-
 .flash-up {
   animation: flashUp 0.35s;
 }
@@ -79,44 +73,6 @@ a, .link {
 .topbar {
   background: var(--bg-1);
   border-bottom: 1px solid var(--gridline);
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--gridline);
-  background: transparent;
-  color: var(--text-0);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn:hover {
-  background: var(--surface);
-}
-
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  background: var(--gridline);
-  color: var(--text-0);
-  font-size: 0.75rem;
-}
-
-.badge.ok {
-  background: var(--ok);
-  color: #fff;
-}
-
-.badge.err {
-  background: var(--error);
-  color: #fff;
 }
 
 /*# sourceMappingURL=styles.css.map */

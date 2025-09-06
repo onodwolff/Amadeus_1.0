@@ -17,8 +17,8 @@ import { ApiService } from '../core/services/api.service';
     </select>
     <input [(ngModel)]="exchange" placeholder="exchange" class="border p-1 mr-2" />
     <input [(ngModel)]="symbol" placeholder="symbol" class="border p-1 mr-2" />
-    <button class="btn" (click)="start()">Start</button>
-    <button class="btn" (click)="stop()">Stop</button>
+    <p-button label="Start" (onClick)="start()"></p-button>
+    <p-button label="Stop" (onClick)="stop()"></p-button>
   </div>
   `
 })
