@@ -36,13 +36,11 @@ export class LogsPage {
   constructor(private ws: WsService, private api: ApiService) {}
 
   ngOnInit() {
-    this.api.cmd('logs').subscribe({
+    this.api.getLogs().subscribe({
       next: (res: any) => {
-        const arr = Array.isArray(res?.logs)
-          ? res.logs
-          : typeof res === 'string'
-            ? [res]
-            : [];
+        const arr = Array.isArray(res?.lines)
+          ? res.lines
+          : [];
         if (arr.length) {
           this.lines.push(...arr.map((l: any) => String(l)));
           setTimeout(() => this.scrollBottom());
