@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { WsService } from '../core/services/ws.service';
 import { ApiService } from '../core/services/api.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-logs',
@@ -33,9 +34,12 @@ export class LogsPage {
   private errSub?: Subscription;
   private statusSub?: Subscription;
 
-  constructor(private ws: WsService, private api: ApiService) {}
+  constructor(private ws: WsService, private api: ApiService, private route: ActivatedRoute) {}
 
   ngOnInit() {
+    const sid = this.route.snapshot.queryParamMap.get('sid');
+    if (sid) this.filter = sid;
+
     this.api.getLogs().subscribe({
       next: (res: any) => {
         const arr = Array.isArray(res?.lines)

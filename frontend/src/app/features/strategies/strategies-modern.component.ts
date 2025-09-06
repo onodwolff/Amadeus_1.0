@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppMaterialModule } from '../../app.module';
 import { ApiService } from '../../core/services/api.service';
@@ -41,7 +41,7 @@ import { ApiService } from '../../core/services/api.service';
       <div class="flex items-center gap-3 mt-3">
         <button class="btn" title="Edit" (click)="edit.emit(s.id); $event.preventDefault(); $event.stopPropagation()">⚙</button>
         <button class="btn" title="Delete" (click)="remove.emit(s.id); $event.preventDefault(); $event.stopPropagation()">🗑</button>
-        <button class="btn" title="Logs" (click)="$event.preventDefault(); $event.stopPropagation()">🧾</button>
+        <button class="btn" title="Logs" (click)="showLogs(s.id); $event.preventDefault(); $event.stopPropagation()">🧾</button>
       </div>
     </a>
   </div>
@@ -50,6 +50,7 @@ import { ApiService } from '../../core/services/api.service';
 export class StrategiesModernComponent implements OnInit {
   private api = inject(ApiService);
   private snack = inject(MatSnackBar);
+  private router = inject(Router);
 
   @Output() create = new EventEmitter<void>();
   @Output() importCfg = new EventEmitter<void>();
@@ -91,5 +92,9 @@ export class StrategiesModernComponent implements OnInit {
     } catch (err: any) {
       this.snack.open(`Failed to load strategies: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
     }
+  }
+
+  showLogs(id: string) {
+    this.router.navigate(['/logs'], { queryParams: { sid: id } });
   }
 }
