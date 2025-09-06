@@ -71,27 +71,53 @@ export class StrategiesComponent {
     await this.refresh();
   }
   async refresh() {
-    const a = await this.api.listStrategies();
-    let d: any;
+    let list: {id: string; running: boolean}[] = [];
     try {
-      d = await firstValueFrom(this.api.get('/dashboard/summary/strategies'));
-    } catch {
-      d = { items: [] };
+      list = await this.api.listStrategies();
+    } catch (err) {
+      console.error('Failed to load strategies', err);
     }
-    if (!Array.isArray(d.items)) d.items = [];
-    const eqMap = new Map(d.items?.map((x:any)=>[x.strategy_id, x.equity]) || []);
-    this.list.set(a.map((x:any)=>({ ...x, equity: eqMap.get(x.id) })));
-    if (a.length && !a.find((x:any)=>x.id===this.sid)) {
-      this.sid = a[0].id;
+
+    let summary: any = { items: [] };
+    try {
+      summary = await firstValueFrom(this.api.get('/dashboard/summary/strategies'));
+    } catch (err) {
+      console.error('Failed to load strategies summary', err);
+    }
+    if (!Array.isArray(summary.items)) summary.items = [];
+    const sumMap = new Map(summary.items.map((x:any)=>[x.strategy_id, x]));
+    this.list.set(list.map((x:any)=>({
+      ...x,
+      running: sumMap.get(x.id)?.running ?? x.running,
+      equity: sumMap.get(x.id)?.equity
+    })));
+
+    if (list.length && !list.find((x:any)=>x.id===this.sid)) {
+      this.sid = list[0].id;
       await this.loadSchema();
     }
   }
+
   async loadSchema() {
-    this.schema.set(await this.api.getSchema(this.sid));
+    try {
+      const s = await this.api.getSchema(this.sid);
+      this.schema.set(s.schema || s);
+      this.cfg = { ...(s.sample || {}) };
+    } catch (err) {
+      console.error('Failed to load schema', err);
+      this.schema.set({ type:'object', properties:{} });
+      this.cfg = {};
+    }
   }
+
   async create() {
-    await this.api.startStrategy(this.sid, this.cfg);
-    this.openCreate = false;
-    await this.refresh();
+    try {
+      await this.api.startStrategy(this.sid, this.cfg);
+      this.openCreate = false;
+      await this.refresh();
+    } catch (err:any) {
+      console.error('Failed to start strategy', err);
+      alert(err?.error?.error || err?.message || 'Failed to start strategy');
+    }
   }
 }
