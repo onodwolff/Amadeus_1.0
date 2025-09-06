@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { AppMaterialModule } from '../app.module';
 import { RiskStatus } from '../models';
 import { ApiService } from '../core/services/api.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-risk',
@@ -54,7 +55,7 @@ import { ApiService } from '../core/services/api.service';
               <input type="number" formControlName="max_loss_usd" />
             </label>
           </div>
-          <button mat-raised-button color="primary" type="submit">Сохранить</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loadingLimits">Сохранить</button>
         </div>
       </form>
     </div>
@@ -63,6 +64,7 @@ import { ApiService } from '../core/services/api.service';
 export class RiskPage {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
+  private snackBar = inject(MatSnackBar);
 
   status: RiskStatus | null = null;
   loadingStatus = true;
@@ -93,7 +95,7 @@ export class RiskPage {
     } else if (err?.message) {
       message += ': ' + err.message;
     }
-    alert(message);
+    this.snackBar.open(message, 'Close', { duration: 3000 });
   }
 
   ngOnInit() {
@@ -105,7 +107,7 @@ export class RiskPage {
     this.loadingStatus = true;
     try {
       this.status = await this.api.getRiskStatus();
-      if (!silent) alert('Risk status loaded');
+      if (!silent) this.snackBar.open('Risk status loaded', 'Close', { duration: 3000 });
     } catch (err) {
       this.handleError('Failed to load risk status', err);
     } finally {
@@ -115,34 +117,38 @@ export class RiskPage {
 
   async refreshLimits(silent = false) {
     this.loadingLimits = true;
+    this.limitsForm.disable();
     try {
       const limits = await this.api.getRiskLimits();
       this.limitsForm.patchValue(limits || {});
-      if (!silent) alert('Risk limits loaded');
+      if (!silent) this.snackBar.open('Risk limits loaded', 'Close', { duration: 3000 });
     } catch (err) {
       this.handleError('Failed to load risk limits', err);
     } finally {
       this.loadingLimits = false;
+      this.limitsForm.enable();
     }
   }
 
   async save() {
     this.loadingLimits = true;
+    this.limitsForm.disable();
     try {
       await this.api.setRiskLimits(this.limitsForm.value);
-      alert('Risk limits saved');
+      this.snackBar.open('Risk limits saved', 'Close', { duration: 3000 });
       await this.refreshLimits(true);
     } catch (err) {
       this.handleError('Failed to save risk limits', err);
     } finally {
       this.loadingLimits = false;
+      this.limitsForm.enable();
     }
   }
 
   async unlock() {
     try {
       await this.api.unlockRisk();
-      alert('Risk unlocked');
+      this.snackBar.open('Risk unlocked', 'Close', { duration: 3000 });
       await this.refreshStatus(true);
     } catch (err) {
       this.handleError('Failed to unlock risk', err);
