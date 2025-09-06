@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { StrategiesModernComponent } from '../features/strategies/strategies-modern.component';
 import { JsonSchemaFormComponent } from '../shared/ui/json-schema-form.component';
 import { ApiService } from '../core/services/api.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AppMaterialModule } from '../app.module';
 
 @Component({
   selector: 'app-strategies',
   standalone: true,
-  imports: [CommonModule, FormsModule, StrategiesModernComponent, JsonSchemaFormComponent],
+  imports: [CommonModule, FormsModule, StrategiesModernComponent, JsonSchemaFormComponent, AppMaterialModule],
   template: `
     <div class="p-4">
       <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" #list></app-strategies-modern>
@@ -65,6 +67,7 @@ import { ApiService } from '../core/services/api.service';
 })
 export class StrategiesPage {
   private api = inject(ApiService);
+  private snack = inject(MatSnackBar);
   @ViewChild('list') private list?: StrategiesModernComponent;
 
   openCreate = false;
@@ -101,9 +104,13 @@ export class StrategiesPage {
   }
 
   async submitCreate() {
-    await this.api.startStrategy(this.sid, this.cfg);
-    this.openCreate = false;
-    await this.list?.refresh();
+    try {
+      await this.api.startStrategy(this.sid, this.cfg);
+      this.openCreate = false;
+      await this.list?.refresh();
+    } catch (err: any) {
+      this.snack.open(`Create failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
   }
 
   onFile(ev: Event) {
@@ -121,9 +128,13 @@ export class StrategiesPage {
   }
 
   async submitImport() {
-    await this.api.startStrategy(this.sid, this.importedCfg || {});
-    this.openImport = false;
-    this.importedCfg = {};
-    await this.list?.refresh();
+    try {
+      await this.api.startStrategy(this.sid, this.importedCfg || {});
+      this.openImport = false;
+      this.importedCfg = {};
+      await this.list?.refresh();
+    } catch (err: any) {
+      this.snack.open(`Import failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+    }
   }
 }
