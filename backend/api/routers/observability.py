@@ -36,10 +36,6 @@ async def ws_logs(ws: WebSocket):
     """Stream log lines to the client using a non-blocking file tail."""
     await ws.accept()
     try:
-        if not os.path.exists(LOG_PATH):
-            await ws.close(code=1003)
-            return
-
         f = await asyncio.to_thread(open, LOG_PATH, "r")
         try:
             await asyncio.to_thread(f.seek, 0, os.SEEK_END)
@@ -51,5 +47,8 @@ async def ws_logs(ws: WebSocket):
                     await asyncio.sleep(0.2)
         finally:
             await asyncio.to_thread(f.close)
+    except FileNotFoundError:
+        await ws.send_text("Log file not found")
+        await ws.close(code=1003)
     except WebSocketDisconnect:
         pass
