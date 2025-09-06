@@ -7,6 +7,10 @@ from backend.core.risk import RISK_ENGINE
 
 router = APIRouter(prefix="/risk", tags=["risk"])
 
+# Seed a default risk policy to avoid empty responses for the UI
+if not RISK_ENGINE.policies:
+    RISK_ENGINE.set_policy("default", max_active_orders=50, max_dd=0.5)
+
 # ---------------------------------------------------------------------------
 # Simple policy management used by tests
 # ---------------------------------------------------------------------------
