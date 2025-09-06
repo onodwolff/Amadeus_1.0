@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { WsService } from '../../core/services/ws.service';
 
 interface LiveOrder {
@@ -15,7 +15,7 @@ interface LiveOrder {
 @Component({
     selector: 'app-orders-widget',
     standalone: true,
-    imports: [CommonModule, AppMaterialModule],
+    imports: [CommonModule, PrimeNgModule],
     templateUrl: './orders-widget.component.html',
     styleUrls: ['./orders-widget.component.scss']
 })

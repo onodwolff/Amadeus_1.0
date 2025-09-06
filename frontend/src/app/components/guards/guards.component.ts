@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 
 @Component({
     selector: 'app-guards',
     standalone: true,
-    imports: [CommonModule, AppMaterialModule],
+    imports: [CommonModule, PrimeNgModule],
     templateUrl: './guards.component.html',
     styleUrls: ['./guards.component.scss']
 })

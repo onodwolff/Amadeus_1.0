@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { WsService } from '../../core/services/ws.service';
 
 interface LogRow {
@@ -12,7 +12,7 @@ interface LogRow {
 @Component({
     selector: 'app-logs',
     standalone: true,
-    imports: [CommonModule, AppMaterialModule],
+    imports: [CommonModule, PrimeNgModule],
     templateUrl: './logs.component.html',
     styleUrls: ['./logs.component.scss']
 })

@@ -1,15 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { AppMaterialModule } from '../app.module';
+import { PrimeNgModule } from '../prime-ng.module';
 import { RiskStatus } from '../models';
 import { ApiService } from '../core/services/api.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from '../shared/ui/toast.service';
 
 @Component({
   selector: 'app-risk',
   standalone: true,
-  imports: [CommonModule, AppMaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, PrimeNgModule, ReactiveFormsModule],
   template: `
     <h1>Risk</h1>
 
@@ -18,8 +18,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <ng-container *ngIf="!loadingStatus">
         <div class="row">
           <div class="chip" [class.on]="status?.allowed">Entries: {{ status?.allowed ? 'ALLOWED' : 'BLOCKED' }}</div>
-          <button mat-stroked-button (click)="refreshStatus()">Обновить</button>
-          <button mat-stroked-button color="warn" (click)="unlock()" *ngIf="!status?.allowed">Снять блокировки</button>
+          <button class="btn" (click)="refreshStatus()">Обновить</button>
+          <button class="btn warn" (click)="unlock()" *ngIf="!status?.allowed">Снять блокировки</button>
         </div>
         <div class="muted" *ngIf="status?.reason">Reason: {{ status?.reason }}</div>
       </ng-container>
@@ -37,7 +37,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         </form>
         <div class="muted" *ngIf="!policies.length">Политики не найдены</div>
         <div class="row" style="margin-top:8px;">
-          <button mat-stroked-button type="button" (click)="refreshPolicies()">Обновить</button>
+          <button class="btn" type="button" (click)="refreshPolicies()">Обновить</button>
         </div>
       </ng-container>
     </div>
@@ -72,7 +72,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
               <input type="number" formControlName="max_loss_usd" />
             </label>
           </div>
-          <button mat-raised-button color="primary" type="submit" [disabled]="loadingLimits">Сохранить</button>
+          <button class="btn primary" type="submit" [disabled]="loadingLimits">Сохранить</button>
         </div>
       </form>
     </div>
@@ -81,7 +81,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class RiskPage {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   status: RiskStatus | null = null;
   loadingStatus = true;
@@ -118,7 +118,7 @@ export class RiskPage {
     } else if (err?.message) {
       message += ': ' + err.message;
     }
-    this.snackBar.open(message, 'Close', { duration: 3000 });
+    this.toast.push(message, 'error');
   }
 
   ngOnInit() {
@@ -131,7 +131,7 @@ export class RiskPage {
     this.loadingStatus = true;
     try {
       this.status = await this.api.getRiskStatus();
-      if (!silent) this.snackBar.open('Risk status loaded', 'Close', { duration: 3000 });
+      if (!silent) this.toast.push('Risk status loaded', 'success');
     } catch (err) {
       this.handleError('Failed to load risk status', err);
     } finally {
@@ -147,12 +147,12 @@ export class RiskPage {
       if (this.policies.length && !this.policiesForm.value.policy) {
         this.policiesForm.patchValue({ policy: this.policies[0] });
       }
-      if (!silent) this.snackBar.open('Risk policies loaded', 'Close', { duration: 3000 });
+      if (!silent) this.toast.push('Risk policies loaded', 'success');
     } catch (err: any) {
       if (err?.status === 404) {
         // endpoint may be unavailable
         this.policies = [];
-        if (!silent) this.snackBar.open('Risk policies not found', 'Close', { duration: 3000 });
+        if (!silent) this.toast.push('Risk policies not found', 'error');
       } else {
         this.handleError('Failed to load risk policies', err);
       }
@@ -168,7 +168,7 @@ export class RiskPage {
     try {
       const limits = await this.api.getRiskLimits();
       this.limitsForm.patchValue(limits || {});
-      if (!silent) this.snackBar.open('Risk limits loaded', 'Close', { duration: 3000 });
+      if (!silent) this.toast.push('Risk limits loaded', 'success');
     } catch (err) {
       this.handleError('Failed to load risk limits', err);
     } finally {
@@ -182,7 +182,7 @@ export class RiskPage {
     this.limitsForm.disable();
     try {
       await this.api.setRiskLimits(this.limitsForm.value);
-      this.snackBar.open('Risk limits saved', 'Close', { duration: 3000 });
+      this.toast.push('Risk limits saved', 'success');
       await this.refreshLimits(true);
     } catch (err) {
       this.handleError('Failed to save risk limits', err);
@@ -195,7 +195,7 @@ export class RiskPage {
   async unlock() {
     try {
       await this.api.unlockRisk();
-      this.snackBar.open('Risk unlocked', 'Close', { duration: 3000 });
+      this.toast.push('Risk unlocked', 'success');
       await this.refreshStatus(true);
     } catch (err) {
       this.handleError('Failed to unlock risk', err);

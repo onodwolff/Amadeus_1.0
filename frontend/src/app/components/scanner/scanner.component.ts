@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AppMaterialModule } from '../../app.module';
+import { PrimeNgModule } from '../../prime-ng.module';
 import { ApiService } from '../../core/services/api.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from '../../shared/ui/toast.service';
 import { Config, ConfigGetResponse, ConfigResponse, PairScore, ScanResponse } from '../../models';
 
 @Component({
     selector: 'app-scanner',
     standalone: true,
-    imports: [CommonModule, FormsModule, AppMaterialModule],
+    imports: [CommonModule, FormsModule, PrimeNgModule],
     templateUrl: './scanner.component.html',
     styleUrls: ['./scanner.component.scss']
 })
@@ -28,7 +28,7 @@ export class ScannerComponent {
     best?: PairScore;
     top: PairScore[] = [];
 
-    constructor(private api: ApiService, private snack: MatSnackBar) {}
+    constructor(private api: ApiService, private toast: ToastService) {}
 
     ngOnInit() {
         const isCfgResp = (r: ConfigGetResponse): r is ConfigResponse => (r as ConfigResponse).cfg !== undefined;
@@ -48,7 +48,7 @@ export class ScannerComponent {
                 this.best = res.best;
                 this.top = Array.isArray(res.top) ? res.top : [];
                 this.loading = false;
-                this.snack.open('Scan complete', 'OK', { duration: 1200 });
+                this.toast.push('Scan complete', 'success');
             },
             error: (e: unknown) => {
                 const errObj = e as { error?: { detail?: string }; message?: string };

@@ -1,14 +1,14 @@
 <div class="group">
   <div class="group-title">Scanner Settings</div>
   <div class="form-grid">
-    <label>Quote <input matInput [(ngModel)]="cfg.quote"></label>
-    <label>Min price <input matInput type="number" [(ngModel)]="cfg.min_price"></label>
-    <label>Min vol USDT 24h <input matInput type="number" [(ngModel)]="cfg.min_vol_usdt_24h"></label>
-    <label>Top by volume <input matInput type="number" [(ngModel)]="cfg.top_by_volume"></label>
-    <label>Max pairs <input matInput type="number" [(ngModel)]="cfg.max_pairs"></label>
-    <label>Min spread bps <input matInput type="number" [(ngModel)]="cfg.min_spread_bps"></label>
+    <label>Quote <input [(ngModel)]="cfg.quote"></label>
+    <label>Min price <input type="number" [(ngModel)]="cfg.min_price"></label>
+    <label>Min vol USDT 24h <input type="number" [(ngModel)]="cfg.min_vol_usdt_24h"></label>
+    <label>Top by volume <input type="number" [(ngModel)]="cfg.top_by_volume"></label>
+    <label>Max pairs <input type="number" [(ngModel)]="cfg.max_pairs"></label>
+    <label>Min spread bps <input type="number" [(ngModel)]="cfg.min_spread_bps"></label>
   </div>
-  <button mat-stroked-button (click)="scan()" [disabled]="loading">{{ loading ? 'Scanning…' : 'Scan' }}</button>
+  <button class="btn" (click)="scan()" [disabled]="loading">{{ loading ? 'Scanning…' : 'Scan' }}</button>
 </div>
 <div *ngIf="err" class="err">{{ err }}</div>
 

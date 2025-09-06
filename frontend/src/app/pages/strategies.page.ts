@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { StrategiesModernComponent } from '../features/strategies/strategies-modern.component';
 import { JsonSchemaFormComponent } from '../shared/ui/json-schema-form.component';
 import { ApiService } from '../core/services/api.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AppMaterialModule } from '../app.module';
+import { PrimeNgModule } from '../prime-ng.module';
+import { ToastService } from '../shared/ui/toast.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-strategies',
   standalone: true,
-  imports: [CommonModule, FormsModule, StrategiesModernComponent, JsonSchemaFormComponent, AppMaterialModule],
+  imports: [CommonModule, FormsModule, StrategiesModernComponent, JsonSchemaFormComponent, PrimeNgModule],
   template: `
     <div class="p-4">
       <app-strategies-modern (create)="onCreate()" (importCfg)="onImport()" (edit)="onEdit($event)" (remove)="onRemove($event)" #list></app-strategies-modern>
@@ -74,7 +74,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class StrategiesPage {
   private api = inject(ApiService);
-  private snack = inject(MatSnackBar);
+  private toast = inject(ToastService);
   @ViewChild('list') private list?: StrategiesModernComponent;
 
   openCreate = false;
@@ -115,7 +115,7 @@ export class StrategiesPage {
       this.cfg = res.config || {};
       this.riskPolicy = res.risk_policy || this.riskPolicy;
     } catch (err: any) {
-      this.snack.open(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -124,7 +124,7 @@ export class StrategiesPage {
       await firstValueFrom(this.api.delete(`/strategies/${id}`));
       await this.list?.refresh();
     } catch (err: any) {
-      this.snack.open(`Delete failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Delete failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -156,7 +156,7 @@ export class StrategiesPage {
       this.editing = false;
       await this.list?.refresh();
     } catch (err: any) {
-      this.snack.open(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -183,7 +183,7 @@ export class StrategiesPage {
       this.importedCfg = {};
       await this.list?.refresh();
     } catch (err: any) {
-      this.snack.open(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'OK', { duration: 2500 });
+      this.toast.push(`Save failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
     }
   }
 
@@ -191,19 +191,15 @@ export class StrategiesPage {
     try {
       this.riskPolicies = await this.api.getRiskPolicies();
       if (!this.riskPolicies.length) {
-        this.snack.open('No risk policies found', 'OK', { duration: 2500 });
+        this.toast.push('No risk policies found', 'info');
       }
     } catch (err: any) {
       if (err?.status === 404) {
         this.riskPolicies = [];
-        this.snack.open('No risk policies found', 'OK', { duration: 2500 });
+        this.toast.push('No risk policies found', 'info');
       } else {
         this.riskPolicies = [];
-        this.snack.open(
-          `Load failed: ${err?.error?.error || err?.message || 'unknown'}`,
-          'OK',
-          { duration: 2500 },
-        );
+        this.toast.push(`Load failed: ${err?.error?.error || err?.message || 'unknown'}`, 'error');
       }
     }
     if (!this.riskPolicy && this.riskPolicies.length) {
