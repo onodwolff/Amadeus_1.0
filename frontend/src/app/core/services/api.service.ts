@@ -128,6 +128,23 @@ export class ApiService {
     );
   }
 
+  async getStrategySummary(
+    id: string,
+    exchange: string,
+    category: string,
+    symbol: string,
+    limit = 5,
+  ): Promise<{ report: any; fills: any[] }> {
+    const url = this.url(
+      `/strategies/${id}/summary?exchange=${exchange}&category=${category}&symbol=${symbol}&limit=${limit}`,
+    );
+    return await firstValueFrom(
+      this.http.get<{ report: any; fills: any[] }>(url, {
+        headers: this.headers(),
+      }),
+    );
+  }
+
   // ---- risk endpoints ----
 
   getRiskStatus(): Promise<RiskStatus> {

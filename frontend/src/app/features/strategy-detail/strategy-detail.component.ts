@@ -69,26 +69,27 @@ export class StrategyDetailComponent {
   }
 
   async load() {
-    let errMsg: string | null = null;
-    try {
-      const rep = await this.api.getStrategyReport(this.sid, this.exchange, this.category, this.symbol);
-      this.rep.set(rep.report);
-    } catch (e) {
-      console.error('Failed to load strategy report', e);
-      this.rep.set({});
-      errMsg = 'Report not available';
-    }
-
-    try {
-      const fills = await this.api.getStrategyFills(this.sid, this.exchange, this.category, this.symbol);
-      this.fills.set(fills.items);
-    } catch (e) {
-      console.error('Failed to load strategy fills', e);
-      this.fills.set([]);
-      errMsg = errMsg ? errMsg + '; fills not available' : 'Fills not available';
-    }
-
-    this.error.set(errMsg);
+    this.error.set(null);
+    const [repRes, fillRes] = await Promise.all([
+      this.api
+        .getStrategyReport(this.sid, this.exchange, this.category, this.symbol)
+        .catch((e) => {
+          console.error('Failed to load strategy report', e);
+          this.error.set('Report not available');
+          return { report: {} } as any;
+        }),
+      this.api
+        .getStrategyFills(this.sid, this.exchange, this.category, this.symbol)
+        .catch((e) => {
+          console.error('Failed to load strategy fills', e);
+          this.error.update((msg) =>
+            msg ? msg + '; fills not available' : 'Fills not available',
+          );
+          return { items: [] } as any;
+        }),
+    ]);
+    this.rep.set(repRes.report || {});
+    this.fills.set(fillRes.items || []);
   }
 
   csvUrl() {

@@ -6,7 +6,8 @@ from sqlmodel import Session, SQLModel, select
 
 from backend.api.deps import require_token
 from backend.core.db import get_session
-from backend.core.models import StrategyRow
+from backend.core.models import StrategyRow, FillRow
+from backend.core.metrics import compute_strategy_report
 
 
 class StrategyCreate(SQLModel):
@@ -78,3 +79,45 @@ def delete_strategy(
     session.delete(row)
     session.commit()
     return {"ok": True}
+
+
+@router.get("/{sid}/summary")
+def strategy_summary(
+    sid: str,
+    symbol: str = "BTCUSDT",
+    exchange: str = "binance",
+    category: str = "usdt",
+    limit: int = 5,
+    session: Session = Depends(get_session),
+    _=Depends(require_token),
+):
+    rep = compute_strategy_report(
+        session,
+        symbol=symbol,
+        exchange=exchange,
+        category=category,
+        strategy_id=sid,
+    )
+    q = (
+        select(FillRow)
+        .where(
+            FillRow.symbol == symbol,
+            FillRow.exchange == exchange,
+            FillRow.category == category,
+            FillRow.strategy_id == sid,
+        )
+        .order_by(FillRow.ts.desc())
+        .limit(limit)
+    )
+    fills = [
+        {
+            "ts": r.ts,
+            "order_id": r.order_id,
+            "symbol": r.symbol,
+            "price": r.price,
+            "qty": r.qty,
+            "side": r.side,
+        }
+        for r in session.exec(q)
+    ]
+    return {"strategy": sid, "report": rep, "fills": fills}
