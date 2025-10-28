@@ -12,7 +12,13 @@ import { PrimeNgModule } from '../../prime-ng.module';
   <div class="p-4">
     <div class="flex items-center justify-between">
       <h2 class="text-xl font-semibold">Strategy: {{ sid }}</h2>
-      <p-button label="Download CSV" [link]="true" [href]="csvUrl()" target="_blank" severity="secondary"></p-button>
+      <a
+        pButton
+        label="Download CSV"
+        [href]="csvUrl()"
+        target="_blank"
+        severity="secondary"
+      ></a>
     </div>
     @if (error()) {
       <div class="mt-4 flex items-center gap-2">
